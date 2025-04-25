@@ -15,13 +15,6 @@ const psychologistRoutes: RouteRecordRaw [] = [
                 path:'index',
                 name:'index',
                 component: MainPage,
-                children:[
-                    {
-                        name:'treatment',
-                        path:'treatment',
-                        component: TreatmentPage,
-                    }
-                ]
             },
             {
                 path:'addChildren',
@@ -33,6 +26,11 @@ const psychologistRoutes: RouteRecordRaw [] = [
                 name:'records',
                 component: Records
             },
+            {
+                name:'treatment',
+                path:'treatment',
+                component: TreatmentPage,
+            }
         ]
     }
 ]

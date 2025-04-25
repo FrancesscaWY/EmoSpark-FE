@@ -1,3 +1,4 @@
+
 <script setup lang="ts">
 // import CameraButton from "./children-client/components/CameraButton.vue";
 // import Welcome1 from "./psychologist-client/components/Welcome.vue";
@@ -6,9 +7,6 @@
 </script>
 
 <template>
-<!--  <CameraButton/>-->
-<!--  <Welcome1/>-->
-<!--  <Welcome2/>-->
   <router-view/>
 </template>
 

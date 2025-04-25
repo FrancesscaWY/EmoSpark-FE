@@ -29,7 +29,7 @@ const childrenData = ref<ChildInfo[]>([
   { id: 12, name: 'Mia', age: 5, gender: 'Female', phone: '12345678912' }
 ])
 const treatmentDialogVisible = ref(false)
-const selectedChild = ref<ChildInfo|null>(null)
+const selectedChild = ref<ChildInfo>()
 const getRandomColor = (seed: number) => {
   const colors = ['#f56c6c', '#e6a23c', '#67c23a', '#409EFF', '#909399', '#00b894', '#fd79a8']
   return colors[seed % colors.length]
@@ -88,15 +88,6 @@ const router = useRouter()
 const startTreatment = (child: ChildInfo) => {
   selectedChild.value = child
   treatmentDialogVisible.value = true
-  router.push({
-    name:'/psychologist/treatment',
-    query:{
-      name:child.name,
-      age:child.age.toString(),
-      gender:child.gender,
-      phone:child.phone
-    }
-  })
 }
 const removeAssociation = (child: ChildInfo) => {
   message.warning(`已解除与${child.name}`)
@@ -104,11 +95,21 @@ const removeAssociation = (child: ChildInfo) => {
 
 const rowKey = (row: ChildInfo) => row.id
 const confirmTreatment = ()=>{
-  if(selectedChild.value){
-    message.success(`开始治疗${selectedChild.value.name}`)
-  }else{
-   message.warning('没有选择儿童')
+  if(!selectedChild.value){
+    message.warning('没有选择儿童');
+    return;
   }
+
+  router.push({
+    path:'/psychologist/treatment',
+    query:{
+      name:selectedChild.value.name,
+      age:selectedChild.value.age.toString(),
+      gender:selectedChild.value.gender,
+      phone:selectedChild.value.phone
+    }
+  })
+  message.success(`开始治疗${selectedChild.value.name}`)
   treatmentDialogVisible.value = false
 }
 </script>
