@@ -31,10 +31,12 @@
         </div>
         <div class="right-actions">
           <div class="user-info-mini">
-            <span class="welcome-text">欢迎您，</span>
+            <span class="welcome-text">欢迎您！</span>
             <span class="username-text">{{ userData.username }}</span>
             <n-avatar round :size="40" class="mini-avatar">{{ userInitials }}</n-avatar>
           </div>
+		  
+		  <!-- 点击跳转可以更改用户登录 -->
           <n-button type="primary" class="account-btn" @click="handleLogout">
             <template #icon><n-icon><user-outlined /></n-icon></template>
             账户管理
@@ -49,13 +51,15 @@
     </div>
   </div>
 </template>
+
+
 <script lang="ts">
 import { defineComponent, computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { NMenu, NAvatar, NButton, NIcon } from 'naive-ui';
 import { UserOutlined } from '@vicons/antd';
 
-export default defineComponent({
+export default defineComponent({ // Vue 3 的标准组件定义方式
   name: 'MainLayout',
   components: {
     NMenu,
@@ -75,7 +79,7 @@ export default defineComponent({
       childrenName:'sugar'
     });
     
-    // 计算用户名首字母作为头像显示（也可以选择固定头像库中的头像）
+    // 用户名首字母作为头像显示（也可以选择固定头像库中的头像）
     const userInitials = computed(() => {
       return userData.value.username.charAt(0);
     });
@@ -89,33 +93,34 @@ export default defineComponent({
     });
     
     // 菜单选项
-    const menuOptions = [
-      {
-        label: '儿童成长记录',
-        key: 'childGrowth',
-      },
-      {
-        label: '儿童信息管理',
-        key: 'childInfo',
-      },
-      {
-        label: '咨询医生线',
-        key: 'consultDoctor',
-      },
-      {
-        label: '儿童沟通',
-        key: 'childCommunication',
-      }
-    ];
-    
+	const menuOptions = [
+	  {
+		label: '儿童成长记录',
+		key: 'childGrowth',
+	  },
+	  {
+		label: '儿童互动',
+		key: 'childCommunication',
+	  },
+	  {
+		label: '儿童信息管理',
+		key: 'childManagement',  
+	  },
+	  {
+		label: '咨询医生',
+		key: 'consultDoctor',
+	  }
+	];
+		
     // 当前激活的菜单项
-    const activeKey = ref('childGrowth');
+    const activeKey = ref('childGrowth',);
     
     // 处理菜单点击
     const handleMenuClick = (key: string) => {
       activeKey.value = key;
       router.push({ name: key });
     };
+	
     
     // 处理退出登录
     const handleLogout = () => {
@@ -135,9 +140,11 @@ export default defineComponent({
   }
 });
 </script>
+
+
 <style scoped>
 .layout-container {
-  display: flex;
+  display: flex; 
   height: 100vh;
   width: 100%;
 }
@@ -266,7 +273,7 @@ export default defineComponent({
 
 .welcome-text {
   color: #666;
-  font-size: 14px;
+  font-size: 10px;
 }
 
 .username-text {

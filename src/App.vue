@@ -6,9 +6,6 @@
 </script>
 
 <template>
-<!--  <CameraButton/>-->
-<!--  <Welcome1/>-->
-<!--  <Welcome2/>-->
   <router-view/>
 </template>
 
