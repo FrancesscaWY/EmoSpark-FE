@@ -1,24 +1,28 @@
 <script setup lang="ts">
 import {onMounted, ref, watch, computed, onUnmounted, nextTick} from 'vue'
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {NAvatar, useMessage} from 'naive-ui'
 import dayjs from 'dayjs'
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5'
+// import FloatingWindow from "../components/FloatingWindow.vue";
+import {useFloatingStore} from "../utils/FloatingStore.ts";
+import childAvatarSrc from '../assets/child.png'
 
 const route = useRoute()
 const message = useMessage()
-
+const router = useRouter()
 // 儿童基本信息
 const name = ref(route.query.name as string)
 const age = ref(Number(route.query.age))
 const gender = ref(route.query.gender as string)
 const phone =  ref(route.query.phone as string)
+const type = ref(route.query.type === 'face2face'?'面对面治疗':'远程治疗')
 // 表情包列表（静态写死）
 const EMOJIS = ['😊 快乐', '😢 悲伤', '😱 恐惧', '😡 生气', '😲 惊讶', '😖 厌恶', '😐 没有情绪']
 // 当前互动记录
 const interactions = ref<ChatMessage[]>([])
 // const systemAvatar = 'https://i.imgur.com/SystemIcon.png'
-const childAvatar = 'https://i.imgur.com/ChildIcon.png'
+const childAvatar = ref(childAvatarSrc)
 // 控制状态
 const isAsking = ref(false)
 const autoAsk = ref(false)
@@ -77,6 +81,7 @@ const restartAskTimer = ()=>{
     askTimer = setInterval(startAsking, askInterval.value * 1000);
   }
 }
+const floatingStore = useFloatingStore()
 
 // 系统默认自动反馈
 const autoFeedBack = ()=>{
@@ -204,6 +209,8 @@ onMounted(()=>{
       box.addEventListener('scroll',onScroll,{passive:true})
     }
   })
+
+  floatingStore.updateFloatingStore(name.value, childAvatar.value,age.value,gender.value,phone.value,type.value,false); // 保存到 Pinia Store
 })
 
 onUnmounted(()=>{
@@ -216,11 +223,14 @@ onUnmounted(()=>{
 })
 
 // 结束治疗
+const isCheckoutModalVisible = ref(false)
 const endTreatment = ()=>{
   autoAsk.value = false
   askTimer && clearInterval(askTimer)
   feedbackTimer && clearInterval(feedbackTimer)
+  floatingStore.setFloating(false)
   message.success('治疗已结束')
+  router.push('/psychologist/index')
 }
 // 格式化时间信息
 const formattedInteraction = computed<ChildDisplayItem[]>(()=>{
@@ -274,12 +284,40 @@ const handleScrollButton = ()=>{
   showScrollButton.value = false
 }
 
+// 浮窗功能
+// 监听页面路由变化
+router.afterEach((to, from) => {
+  const origin = from.name as string | undefined;
+  const target = to.name as string | undefined;
+
+  console.log(`from: ${origin}, to: ${target}`); // 输出路由变化信息
+
+  if (origin && target) {
+    // 确保 origin 和 target 都不是 undefined
+    if (origin === 'face2face-treatment' && target !== 'face2face-treatment') {
+      console.log("Conditions met, showing floating window");
+      floatingStore.setFloating(true)
+    } else {
+      console.debug("Conditions not met");
+    }
+  } else {
+    console.debug("Origin or target is undefined");
+  }
+  console.debug("hello!"); // 这里打印的应该能够显示
+});
+
+
+// // 返回治疗页面
+// const restoreTreatmentPage = ()=>{
+//   floatingStore.setFloating(false)
+//   router.push({name:'face2face-treatment'})
+// };
 </script>
 
 <template>
   <n-layout style="padding: 20px;overflow-y: hidden" >
     <n-card>
-      <n-text>正在治疗中
+      <n-text>正在进行{{type}}
         <span class="blink-dot"></span>
       </n-text>
     </n-card>
@@ -312,8 +350,21 @@ const handleScrollButton = ()=>{
               <n-button
                   type="error"
                   style="margin-left: 12px"
-                  @click="endTreatment"
+                  @click="isCheckoutModalVisible = true"
               >结束治疗</n-button>
+              <n-modal
+                  v-model:show="isCheckoutModalVisible"
+                  title="结束治疗"
+                  preset="dialog"
+                  :mask-closable="false"
+              >
+                <p>您确定要结束治疗吗？<br/>
+                  结束后将自动返回主页，请可在工作记录中查看本次治疗详情</p>
+                <template #action>
+                  <n-button @click="isCheckoutModalVisible=false">取消</n-button>
+                  <n-button @click="endTreatment" style="margin-left: 12px;">确认</n-button>
+                </template>
+              </n-modal>
             </div>
 <!--            </n-row>-->
           </n-card>
@@ -427,6 +478,7 @@ const handleScrollButton = ()=>{
         </n-col>
       </n-row>
     </n-card>
+<!--    <FloatingWindow v-if="isFloating" :name="name" :avatar="childAvatar" @click="restoreTreatmentPage"/>-->
   </n-layout>
 </template>
 
