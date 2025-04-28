@@ -42,17 +42,30 @@ const restoreTreatmentPage = () => {
   // 只有当没有拖动时才执行跳转
   if (!isDragging.value) {
     floatingStore.setFloating(false)
-    // 路由回到治疗页面
-    router.push({
-      name: 'face2face-treatment',
-      query: {
-        name: floatingStore.name,
-        age: floatingStore.age,
-        gender: floatingStore.gender,
-        phone: floatingStore.phone,
-        type: floatingStore.type,
-      }
-    })
+    if(floatingStore.type === 'face2face-treatment'){
+      // 路由回到治疗页面
+      router.push({
+        name: 'face2face-treatment',
+        query: {
+          name: floatingStore.name,
+          age: floatingStore.age,
+          gender: floatingStore.gender,
+          phone: floatingStore.phone,
+          type: floatingStore.type,
+        }
+      })
+    }else{
+      router.push({
+        name: 'remote-treatment',
+        query: {
+          name: floatingStore.name,
+          age: floatingStore.age,
+          gender: floatingStore.gender,
+          phone: floatingStore.phone,
+          type: floatingStore.type,
+        }
+      })
+    }
   }
 }
 
