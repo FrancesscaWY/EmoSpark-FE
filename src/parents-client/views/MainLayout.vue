@@ -237,6 +237,8 @@ export default defineComponent({
   z-index: 100;
 }
 
+
+
 .side-menu.collapsed {
   width: 80px;
   padding: 0;
