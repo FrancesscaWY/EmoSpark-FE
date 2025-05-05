@@ -11,9 +11,11 @@
         @update:value="handleChildSelect"
       />
     </div>
-	<!-- 儿童信息 -->
+
+    <!-- 儿童信息 -->
     <div class="child-info-card" v-if="selectedChild">
       <div class="child-info-panel">
+        <!-- 显示这个头像图片；没有值的话，显示头像+孩子名字的首字母 -->
         <div class="child-avatar">
           <img v-if="selectedChildInfo.avatar" :src="selectedChildInfo.avatar" alt="头像" />
           <n-avatar v-else round size="large">{{ selectedChildInfo.name?.charAt(0) || '?' }}</n-avatar>
@@ -28,8 +30,8 @@
             <span class="value">{{ selectedChildInfo.age }}岁</span>
           </div>
           <div class="info-item">
-			  <!-- 这里可以根据注册时间定义 -->
-            <span class="label">Emospark用龄:</span>
+            <span class="label">EmoSpark用龄:</span>
+            <!-- 注册日 -->
             <span class="value">{{ selectedChildInfo.treatmentDuration }}</span>
           </div>
         </div>
@@ -43,55 +45,32 @@
             @click="startTraining"
             class="control-button"
           >
-		  <!-- 点击后开始计时 -->
             <template #icon><n-icon><play-circle-outlined /></n-icon></template>
-            开始互动
+            <span class="button-text">开始互动</span>
           </n-button>
+          
+          <n-button
+            type="info"
+            :disabled="!isTrainingActive"
+            @click="sendQuestionToChild"
+            class="control-button"
+          >
+            <template #icon><n-icon><question-circle-outlined /></n-icon></template>
+            <span class="button-text">发送提问</span>
+          </n-button>
+          
           <n-button
             type="error"
             :disabled="!isTrainingActive"
             @click="endTraining"
             class="control-button"
           >
-            	  <!-- 点击后结束计时 --><template #icon><n-icon><stop-outlined /></n-icon></template>
-            结束互动
+            <template #icon><n-icon><stop-outlined /></n-icon></template>
+            <span class="button-text">结束互动</span>
           </n-button>
         </div>
 
         <div class="content-grid">
-          <!-- 训练互动模块 -->
-          <div class="video-container">
-            <div v-if="isTrainingActive" class="video-status">
-              <n-icon size="48" color="#18A058"><check-circle-outlined /></n-icon>
-              <p>儿童正在进行情绪互动，您可以通过聊天功能进行鼓励和指导</p>
-            </div>
-            <div v-else class="video-placeholder">
-              <n-icon size="48"><smile-outlined /></n-icon>
-              <p>点击"开始互动"启动情绪互动</p>
-            </div>
-          </div>
-
-          <!-- 互动统计 -->
-          <div class="training-stats">
-            <h3>互动统计</h3>
-            <div class="stats-container">
-              <div class="stat-item">
-				  <!-- 正确率由大模型判断！！！ -->
-                <div class="stat-label">正确率</div>
-                <n-progress
-                  type="circle"
-                  :percentage="correctRate"
-                  :color="correctRate > 70 ? '#18A058' : '#F0A020'"
-                  :height="80"
-                />
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">互动时间</div>
-                <div class="stat-value">{{ formatTime(trainingTime) }}</div>
-              </div>
-            </div>
-          </div>
-
           <!-- 互动记录 -->
           <div class="chat-container">
             <div class="chat-header">
@@ -105,41 +84,106 @@
               <div
                 v-for="(message, index) in chatMessages"
                 :key="index"
-                :class="['message', message.sender === 'parent' ? 'message-sent' : 'message-received']"
+                class="message-container"
+                :class="{ 'message-right': message.sender === 'parent', 'message-left': message.sender !== 'parent' }"
               >
-                <div class="message-content">
-                  <div v-if="message.type === 'result'" class="result-message">
-                    {{ message.content }}
-                    <n-icon :color="message.isCorrect ? '#18A058' : '#F44336'" size="16">
-                      <check-outlined v-if="message.isCorrect" />
-                      <close-outlined v-else />
-                    </n-icon>
+                <!---气泡布局 -->
+                <div class="message-bubble" :class="`bubble-${message.sender}`">
+                  <!-- 头像部分 -->
+                  <div class="bubble-avatar">
+                    <n-avatar 
+                      round 
+                      size="small" 
+                      :style="{ backgroundColor: getSenderColor(message.sender) }"
+                    >
+                      {{ getSenderInitial(message.sender, selectedChildInfo.name) }}
+                    </n-avatar>
                   </div>
-                  <div v-else class="text-message">
-                    {{ message.content }}
+                  
+                  <!-- 消息内容部分 -->
+                  <div class="bubble-content">
+                    <!-- 发送者姓名和时间并排 -->
+                    <div class="bubble-header">
+                      <div class="sender-name">{{ getSenderName(message.sender, selectedChildInfo.name) }}</div>
+                      <div class="message-time">{{ message.time }}</div>
+                    </div>
+                    
+                    <!-- 消息内容 -->
+                    <div class="message-text">
+                      <div v-if="message.type === 'result'" class="result-message">
+                        <!-- 正确绿色icon，错误红色icon，content内容可以改 -->
+                        {{ message.content }}
+                        <n-icon :color="message.isCorrect ? '#18A058' : '#F44336'" size="16">
+                          <check-outlined v-if="message.isCorrect" />
+                          <close-outlined v-else />
+                        </n-icon>
+                      </div>
+                      <div v-else>
+                        {{ message.content }}
+                      </div>
+                    </div>
                   </div>
-                  <div class="message-time">{{ message.time }}</div>
                 </div>
               </div>
             </div>
-<!-- 这里是家长可以通过打字鼓励孩子，也可以通过聊天框记录当时想法或者其他的记录，可以删除 -->
             <div class="chat-input">
               <n-input
                 v-model:value="messageInput"
                 type="text"
-                placeholder="输入鼓励的话..."
+                placeholder="输入备注内容..."
                 @keyup.enter="sendMessage"
               />
               <n-button type="primary" @click="sendMessage" :disabled="!isTrainingActive">
-                发送
+                备注
               </n-button>
+            </div>
+          </div>
+
+          <!-- 互动统计 -->
+          <div class="training-stats">
+            <div class="stats-header">
+              <h3>互动统计</h3>
+              <n-button text @click="resetStats" size="small">
+                清零统计
+              </n-button>
+            </div>
+            <div class="stats-container">
+              <div class="stat-item">
+                <div class="stat-label">正确率</div>
+                <!-- 不同正确率的显示颜色 -->
+                <n-progress
+                  type="circle"
+                  :percentage="correctRate"
+                  :color="correctRate > 70 ? '#18A058' : '#F0A020'"
+                  :height="80"
+                />
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">互动时间</div>
+                <!-- 调用时钟来计时 -->
+                <div class="stat-value">{{ formatTime(trainingTime) }}</div>
+              </div>
+            </div>
+            <div class="stats-details">
+              <div class="stats-row">
+                <span>提问次数:</span>
+                <span>{{ questionCount }}</span>
+              </div>
+              <div class="stats-row">
+                <span>回答次数:</span>
+                <span>{{ completedCount }}</span>
+              </div>
+              <div class="stats-row">
+                <span>正确回答:</span>
+                <span>{{ correctCount }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-<!-- 没有孩子的时候显示空白页面，如下 -->
+    <!-- 没有孩子的时候显示空白页面，点击管理儿童信息跳转到对应页面 -->
     <div class="no-child-selected" v-else>
       <n-empty description="请先选择一个孩子开始互动">
         <template #extra>
@@ -153,7 +197,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import { defineComponent, ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue';
+// 路由设置
 import { useRouter } from 'vue-router';
 import { 
   NSelect, 
@@ -164,15 +209,17 @@ import {
   NInput, 
   NEmpty 
 } from 'naive-ui';
+// 图标接入
 import { 
   StopOutlined, 
   CheckOutlined, 
   CloseOutlined,
   CheckCircleOutlined,
   PlayCircleOutlined,
-  SmileOutlined
+  QuestionCircleOutlined
 } from '@vicons/antd';
 
+// 孩子信息的一个接口！！
 interface ChildInfo {
   id: string;
   name: string;
@@ -190,7 +237,7 @@ interface ChatMessage {
 }
 
 export default defineComponent({
-  name: 'ParentEmotionTraining',
+  name: 'ChildInteraction',
   components: {
     NSelect,
     NButton,
@@ -204,7 +251,7 @@ export default defineComponent({
     CloseOutlined,
     CheckCircleOutlined,
     PlayCircleOutlined,
-    SmileOutlined
+    QuestionCircleOutlined
   },
   setup() {
     const router = useRouter();
@@ -213,13 +260,13 @@ export default defineComponent({
     const messageInput = ref('');
     const chatMessagesRef = ref<HTMLDivElement | null>(null);
     
-    // 7种情绪对应标签？？？
+    // 7种情绪对应标签
     const emotionLabels = {
       'happy': '快乐',
       'sad': '悲伤',
-      'angry': '恐惧',
-      'surprised': '生气',
-      'fear': '惊讶',
+      'angry': '生气',
+      'surprised': '惊讶',
+      'fear': '恐惧',
       'disgust': '厌恶',
       'neutral': '没有情绪'
     };
@@ -228,7 +275,6 @@ export default defineComponent({
     const children = reactive<ChildInfo[]>([
       { id: '1', name: 'BEVERLY', age: 7, treatmentDuration: '1年' },
       { id: '2', name: 'EVA', age: 9, treatmentDuration: '6个月' },
-     
     ]);
 
     const childrenOptions = computed(() => {
@@ -237,7 +283,7 @@ export default defineComponent({
         value: child.id
       }));
     });
-
+    // 动态寻找孩子信息
     const selectedChildInfo = computed(() => {
       return children.find(child => child.id === selectedChild.value) || {} as ChildInfo;
     });
@@ -247,6 +293,7 @@ export default defineComponent({
     // 互动相关状态 - 统计信息
     const correctCount = ref(0);
     const completedCount = ref(0);
+    const questionCount = ref(0);
     const trainingTime = ref(0);
     const trainingTimer = ref<number | null>(null);
     
@@ -254,6 +301,32 @@ export default defineComponent({
       if (completedCount.value === 0) return 0;
       return Math.round((correctCount.value / completedCount.value) * 100);
     });
+    const getSenderName = (sender: string, childName: string) => {
+      if (sender === 'system') return 'EmoSpark';
+      if (sender === 'child') return childName || '儿童';
+      return '家长';
+    };
+    // 获取发送者对应的颜色
+    const getSenderColor = (sender: string) => {
+      const colors = {
+        system: '#1976D2',  // EmoSpark蓝色
+        child: '#4CAF50',   // 儿童绿色
+        parent: '#9C27B0'   // 家长紫色
+      };
+      return colors[sender as keyof typeof colors] || '#888888';
+    };
+
+    // 获取发送者头像首字母
+    const getSenderInitial = (sender: string, childName: string) => {
+      if (sender === 'system') return 'E';  // EmoSpark
+      if (sender === 'child') return childName?.charAt(0) || 'C';
+      return 'P';  // Parent
+    };
+
+    // 获取气泡样式类
+    const getBubbleClass = (sender: string) => {
+      return `bubble-${sender}`;
+    };
 
     // 选择孩子时的处理
     const handleChildSelect = (childId: string) => {
@@ -273,7 +346,7 @@ export default defineComponent({
 
     // 加载互动历史记录
     const loadTrainingHistory = (childId: string) => {
-      // ！！！在实际应用中，这里应该从API获取数据
+      // 在实际应用中，这里应该从API获取数据
       const now = new Date();
       const historyTime = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
       
@@ -281,7 +354,7 @@ export default defineComponent({
         addSystemMessage(`加载 ${selectedChildInfo.value.name} 的互动历史记录`);
       }, 500);
     };
-
+    // 跳转到孩子信息的页面
     const goToChildInfo = () => {
       router.push({ name: 'childManagement' });
     };
@@ -289,11 +362,8 @@ export default defineComponent({
     // 开始互动
     const startTraining = () => {
       isTrainingActive.value = true;
-      addSystemMessage('开始情绪识别互动');
+      addSystemMessage('开始情绪识别互动 - 已连接儿童端');
       startTrainingTimer();
-      
-      // 模拟接收儿童客户端的互动结果
-      simulateChildTraining();
     };
 
     // 结束互动
@@ -302,11 +372,75 @@ export default defineComponent({
       stopTrainingTimer();
       addSystemMessage(`结束互动，本次正确率: ${correctRate.value}%`);
       
-      // 停止模拟
-      stopSimulation();
-      
       // 保存互动结果
       saveTrainingResults();
+    };
+
+    // 清零统计
+    const resetStats = () => {
+      // 先记录当前值用于消息
+      const prevCorrectRate = correctRate.value;
+      const prevQuestionCount = questionCount.value;
+      const prevCompletedCount = completedCount.value;
+      
+      // 重置统计数据
+      resetTrainingStats();
+      
+      // 添加系统消息
+      addSystemMessage(`统计已清零 - 上次统计: 正确率 ${prevCorrectRate}%, 题目数 ${prevCompletedCount}/${prevQuestionCount}`);
+    };
+
+    // 发送情绪提问
+    const sendQuestionToChild = () => {
+      if (!isTrainingActive.value) return;
+      
+      questionCount.value++;
+      const now = new Date();
+      const messageTime = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      chatMessages.value.push({
+        content: "已向儿童发送情绪识别提问",
+        sender: 'parent',
+        time: messageTime,
+        type: 'text'
+      });
+      
+      scrollChatToBottom();
+      
+      // 模拟儿童回答
+      simulateChildResponse();
+    };
+
+    // 模拟儿童回答情绪提问
+    const simulateChildResponse = () => {
+      // 这里模拟儿童回答，实际应用中应该是等待儿童端的响应
+      setTimeout(() => {
+        const emotionKeys = Object.keys(emotionLabels);
+        const selectedEmotion = emotionKeys[Math.floor(Math.random() * emotionKeys.length)];
+        const correctEmotion = Math.random() > 0.3 ? selectedEmotion : emotionKeys[Math.floor(Math.random() * emotionKeys.length)];
+        const isCorrect = selectedEmotion === correctEmotion;
+        
+        completedCount.value++;
+        if (isCorrect) {
+          correctCount.value++;
+        }
+        
+        // 先添加儿童的选择消息
+        const now = new Date();
+        chatMessages.value.push({
+          content: `儿童选择了情绪: ${getEmotionLabel(selectedEmotion)}`,
+          sender: 'child',
+          time: `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`,
+          type: 'text'
+        });
+        
+        scrollChatToBottom();
+        
+        // 然后添加系统结果消息
+        setTimeout(() => {
+          addResultMessage(selectedEmotion, correctEmotion, isCorrect);
+        }, 500);
+      }, 2000);
     };
 
     // 保存互动结果
@@ -316,7 +450,8 @@ export default defineComponent({
         childId: selectedChild.value,
         correctRate: correctRate.value,
         trainingTime: trainingTime.value,
-        completedExercises: completedCount.value
+        completedExercises: completedCount.value,
+        questionCount: questionCount.value
       });
       
       // 添加系统消息提示保存成功
@@ -346,49 +481,11 @@ export default defineComponent({
     };
 
     // 重置互动统计
-	// 重置聊天框中的内容和时间记录
     const resetTrainingStats = () => {
       correctCount.value = 0;
       completedCount.value = 0;
+      questionCount.value = 0;
       trainingTime.value = 0;
-    };
-
-    // 模拟变量!!!!
-    let simulationTimer: number | null = null;
-    
-    // 模拟儿童客户端互动过程
-    const simulateChildTraining = () => {
-      // 每隔一段时间模拟收到一次互动结果
-      simulationTimer = window.setInterval(() => {
-        if (completedCount.value >= 10) {
-          addSystemMessage(`互动完成！总正确率: ${correctRate.value}%`);
-          setTimeout(() => endTraining(), 1000);
-          return;
-        }
-        
-        // 模拟一次结果
-        const emotionKeys = Object.keys(emotionLabels);
-        const selectedEmotion = emotionKeys[Math.floor(Math.random() * emotionKeys.length)];
-        const correctEmotion = Math.random() > 0.3 ? selectedEmotion : emotionKeys[Math.floor(Math.random() * emotionKeys.length)];
-        const isCorrect = selectedEmotion === correctEmotion;
-        
-        completedCount.value++;
-        if (isCorrect) {
-          correctCount.value++;
-        }
-        
-        // 添加结果消息
-        addResultMessage(selectedEmotion, correctEmotion, isCorrect);
-        
-      }, 10000); // 每10秒一次结果！！！随便设置的
-    };
-    
-    // 停止模拟
-    const stopSimulation = () => {
-      if (simulationTimer !== null) {
-        clearInterval(simulationTimer);
-        simulationTimer = null;
-      }
     };
 
     // 发送消息
@@ -405,26 +502,14 @@ export default defineComponent({
         type: 'text'
       });
       
-      const sentMessage = messageInput.value;
       messageInput.value = '';
       scrollChatToBottom();
       
-      // 根据消息内容智能判断回应
-      const message = sentMessage.toLowerCase();
-      let responseDelay = 1500;
-      
-      // 如果消息包含鼓励词汇，增加儿童积极回应的概率
-      const encouragingWords = ['加油', '很棒', '做得好', '真不错', '继续', '很好'];
-      const hasEncouragingWords = encouragingWords.some(word => message.includes(word));
-      
-      // 模拟孩子回应，ps 可以删，感觉用处不大，可留可无！！！
-	  
-      if (hasEncouragingWords || Math.random() < 0.4) {
-        setTimeout(() => {
-          const positiveResponses = ['谢谢爸爸/妈妈！', '我会继续加油的！', '我喜欢这个游戏！', '我做得对吗？', '我感觉自己进步了！'];
-          const neutralResponses = ['这个好难啊...', '我不太确定...', '我需要你的帮助', '这是什么表情呢？'];
-          
-          let responses = hasEncouragingWords ? positiveResponses : [...positiveResponses, ...neutralResponses];
+      // 根据消息内容可能触发儿童回应
+      setTimeout(() => {
+        // 随机决定是否有儿童回应
+        if (Math.random() < 0.4) {
+          const responses = ['谢谢爸爸/妈妈！', '我会继续加油的！', '我喜欢这个游戏！', '我感觉自己进步了！'];
           const randomResponse = responses[Math.floor(Math.random() * responses.length)];
           
           const replyTime = new Date();
@@ -436,8 +521,8 @@ export default defineComponent({
           });
           
           scrollChatToBottom();
-        }, responseDelay);
-      }
+        }
+      }, 1500);
     };
 
     // 添加系统消息
@@ -474,10 +559,9 @@ export default defineComponent({
     // 清空聊天记录并重置互动时长
     const clearChatHistory = () => {
       chatMessages.value = [];
-      trainingTime.value = 0;  // 重置互动时长
       
       if (isTrainingActive.value) {
-        addSystemMessage('互动记录已清空，互动时长重置');
+        addSystemMessage('互动记录已清空');
       }
     };
 
@@ -494,13 +578,6 @@ export default defineComponent({
     const getEmotionLabel = (value: string) => {
       return emotionLabels[value as keyof typeof emotionLabels] || value;
     };
-
-    // 监听选择的儿童变化
-    watch(selectedChild, (newVal) => {
-      if (newVal) {
-        console.log(`选择了儿童: ${newVal}`);
-      }
-    });
 
     // 组件挂载
     onMounted(() => {
@@ -529,15 +606,25 @@ export default defineComponent({
       chatMessagesRef,
       correctRate,
       completedCount,
+      questionCount,
       trainingTime,
+      correctCount,
       
       handleChildSelect,
       goToChildInfo,
       startTraining,
       endTraining,
+      sendQuestionToChild,
       sendMessage,
       clearChatHistory,
-      formatTime
+      formatTime,
+      resetStats,
+      
+      // 新增的方法
+      getSenderColor,
+      getSenderInitial,
+      getBubbleClass,
+      getSenderName
     };
   }
 });
@@ -546,6 +633,9 @@ export default defineComponent({
 <style scoped>
 .child-growth-container {
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 .section-title {
@@ -557,6 +647,7 @@ export default defineComponent({
 .child-selector {
   margin-bottom: 20px;
   width: 200px;
+  max-width: 100%;
 }
 
 .child-info-card {
@@ -574,10 +665,12 @@ export default defineComponent({
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
 }
 
 .child-avatar {
   margin-right: 20px;
+  margin-bottom: 10px;
 }
 
 .child-avatar img {
@@ -589,109 +682,61 @@ export default defineComponent({
 
 .child-details {
   flex: 1;
+  min-width: 200px;
 }
 
 .info-item {
   margin-bottom: 5px;
   display: flex;
+  flex-wrap: wrap;
 }
 
 .label {
   font-weight: bold;
-  width: 160px; 
+  width: 160px;
+  min-width: 80px;
 }
 
 .control-buttons {
   display: flex;
   gap: 10px;
   margin-bottom: 15px;
+  flex-wrap: wrap;
 }
 
-/* 重新设计内容布局为网格 */
+.control-button {
+  flex: 1;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-text {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.bubble-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+/* 内容布局为网格 */
 .content-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: auto 1fr;
+  grid-template-columns: 60% 38%;
   gap: 20px;
+  min-height: 400px;
 }
 
-/* 视频容器占据整行 */
-.video-container {
-  grid-column: 1 / 3;
-  height: 170px;
-  background-color: #e0e0e0;
-  border-radius: 8px;
+/* 互动记录在左侧 */
+.message-container {
+  margin-bottom: 16px;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.video-status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  height: 100%;
   width: 100%;
-  background-color: #f0f8ff;
-}
-
-.video-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-/* 互动统计在左侧 */
-.training-stats {
-  grid-column: 1;
-  grid-row: 2;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  height: 400px;
-}
-
-.stats-container {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.stat-label {
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-/* 聊天容器在右侧 */
-.chat-container {
-  grid-column: 2;
-  grid-row: 2;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  height: 400px;
 }
 
 .chat-header {
@@ -701,6 +746,12 @@ export default defineComponent({
   margin-bottom: 10px;
 }
 
+.sender-name {
+  font-weight: bold;
+  font-size: 13px;
+  margin: 0;
+}
+
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -708,56 +759,306 @@ export default defineComponent({
   background-color: #f5f5f5;
   border-radius: 4px;
   margin-bottom: 10px;
+  height: 380px;
 }
 
-.message {
-  margin-bottom: 10px;
-  max-width: 80%;
+/* 新的消息样式 */
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
-.message-sent {
-  margin-left: auto;
+.message-avatar {
+  margin-bottom: 4px;
 }
 
-.message-received {
-  margin-right: auto;
-}
-
-.message-content {
+.message-bubble {
+  display: flex;
+  max-width: 85%;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 8px 12px;
-  border-radius: 8px;
   position: relative;
 }
 
-.message-sent .message-content {
-  background-color: #d0f0ff;
+/* 不同发送者的气泡样式 */
+.bubble-system {
+  background-color: #E3F2FD;
+  border: 1px solid #BBDEFB;
 }
 
-.message-received .message-content {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
+.bubble-content {
+  flex: 1;
+  min-width: 0; /* 防止内容溢出 */
+  display: flex;
+  flex-direction: column;
 }
 
-.message-time {
-  font-size: 12px;
-  color: #888888;
-  text-align: right;
-  margin-top: 3px;
+.bubble-child {
+  background-color: #E8F5E9;
+  border: 1px solid #C8E6C9;
 }
 
+.bubble-parent {
+  background-color: #F3E5F5;
+  border: 1px solid #E1BEE7;
+}
+
+.bubble-avatar {
+  margin-right: 10px; 
+  align-self: flex-start;
+  padding-top: 2px;
+}
+
+.message-text {
+  word-break: break-word;
+  font-size: 14px;
+}
+
+/* 结果消息 */
 .result-message {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
+.message-right {
+  justify-content: flex-end;
+}
+
+.message-left {
+  justify-content: flex-start;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #888888;
+  margin: 0;
+}
+
 .chat-input {
   display: flex;
   gap: 10px;
+  margin-top: 10px;
+  height: 40px;
+}
+
+/* 互动统计在右侧 */
+.training-stats {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  height: 480px;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.stats-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+}
+
+.stat-label {
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1976D2;
+}
+
+.stats-details {
+  margin-top: 20px;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
 }
 
 .no-child-selected {
-  padding: 40px;
+  padding: 30px;
   text-align: center;
+}
+
+/* 媒体查询：响应式布局 */
+
+/* 大屏幕 - 默认布局 */
+
+/* 中等屏幕 - 992px以下 */
+@media (max-width: 992px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .training-stats {
+    height: auto;
+    min-height: auto;
+    padding-bottom: 20px;
+  }
+  
+  .stats-container {
+    justify-content: space-between;
+  }
+}
+
+/* 平板屏幕 - 768px以下 */
+@media (max-width: 768px) {
+  .child-growth-container {
+    padding: 0 10px;
+  }
+  
+  .child-info-panel {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .child-avatar {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .child-details {
+    width: 100%;
+  }
+  
+  .info-item {
+    justify-content: center;
+  }
+  
+  .label {
+    width: auto;
+    margin-right: 10px;
+  }
+  
+  .chat-messages {
+    height: 320px;
+  }
+  
+  .control-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .control-button {
+    min-width: 120px;
+  }
+}
+
+/* 手机屏幕 - 576px以下 */
+@media (max-width: 576px) {
+  .section-title {
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  .child-selector {
+    width: 100%;
+  }
+  
+  .child-info-card {
+    padding: 15px 10px;
+  }
+  
+  .control-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .control-button {
+    width: 100%;
+  }
+  
+  .chat-messages {
+    height: 280px;
+    padding: 8px;
+  }
+  
+  .message-bubble {
+    max-width: 95%;
+    padding: 6px 10px;
+  }
+  
+  .bubble-avatar {
+    margin-right: 6px;
+  }
+  
+  .sender-name {
+    font-size: 12px;
+  }
+  
+  .message-text {
+    font-size: 13px;
+  }
+  
+  .chat-input {
+    flex-direction: column;
+    height: auto;
+    gap: 5px;
+  }
+  
+  .chat-input .n-button {
+    width: 100%;
+  }
+  
+  .stats-container {
+    flex-direction: column;
+    gap: 25px;
+  }
+  
+  .stat-item {
+    width: 100%;
+  }
+}
+
+/* 超小屏幕 - 400px以下 */
+@media (max-width: 400px) {
+  .child-info-panel {
+    padding: 10px 5px;
+  }
+  
+  .chat-messages {
+    height: 250px;
+  }
+  
+  .message-bubble {
+    max-width: 98%;
+    padding: 5px 8px;
+  }
+  
+  .message-text {
+    font-size: 12px;
+  }
+  
+  .bubble-avatar {
+    display: none; /* 在极小屏幕上隐藏头像以节省空间 */
+  }
 }
 </style>

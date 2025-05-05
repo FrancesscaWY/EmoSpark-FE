@@ -3,8 +3,8 @@ import MainLayout from '../parents-client/views/MainLayout.vue'
 import ChildGrowth from '../parents-client/views/ChildGrowth.vue'
 import ChildManagement from '../parents-client/views/ChildManagement.vue'
 import ChildCommunication from '../parents-client/views/ChildCommunication.vue'
-import ConsultDoctor from '../parents-client/views/MainLayout.vue'
-import UserSettings from '../parents-client/views/MainLayout.vue'
+import ConsultDoctor from '../parents-client/views/ConsultDoctor.vue'
+import UserSettings from '../parents-client/views/UserSettings.vue'
 
 const router: RouteRecordRaw [] = [
   {
@@ -43,7 +43,7 @@ const router: RouteRecordRaw [] = [
       },
 	  // 用户设置界面(家长端)
       {
-        path: 'user-settings',  // 将用户设置移到父路由内
+        path: 'user-settings',  
         name: 'userSettings',
         component: UserSettings
       }

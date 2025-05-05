@@ -1,7 +1,7 @@
 <template>
   <div class="layout-container">
     <!-- 左侧菜单 -->
-    <div class="side-menu">
+    <div :class="['side-menu', { collapsed: isCollapsed }]">
       <!-- 用户信息 -->
       <div class="user-info">
         <div class="avatar-container">
@@ -13,77 +13,136 @@
           <div class="user-role">{{ getParentRole }}</div>
         </div>
       </div>
-      
-      <!-- 菜单项（ 侧拉啊）-->
-      <n-menu
-        :options="menuOptions"
-        :value="activeKey"
-        @update:value="handleMenuClick"
-      />
+
+      <!-- 菜单项 -->
+      <n-menu :options="menuOptions" :value="activeKey" @update:value="handleMenuClick" :collapsed="isCollapsed" :collapsed-width="80" />
     </div>
-    
+
     <!-- 右侧内容区域 -->
     <div class="content-area">
       <!-- 顶部标题栏 -->
       <div class="top-bar">
-        <div class="page-title">
-          EmoSpark-家长客户端
-        </div>
-        <div class="right-actions">
-          <div class="user-info-mini">
-            <span class="welcome-text">欢迎您！</span>
-            <span class="username-text">{{ userData.username }}</span>
-            <n-avatar round :size="40" class="mini-avatar">{{ userInitials }}</n-avatar>
-          </div>
-		  
-		  <!-- 点击跳转可以更改用户登录 -->
-          <n-button type="primary" class="account-btn" @click="handleLogout">
-            <template #icon><n-icon><user-outlined /></n-icon></template>
-            账户管理
+        <div class="title-section">
+          <n-button 
+            text 
+            @click="toggleMenu" 
+            class="menu-toggle-btn"
+            :class="{ active: !isCollapsed }"
+          >
+            <template #icon>
+              <n-icon size="20">
+                <menu-outlined />
+              </n-icon>
+            </template>
           </n-button>
+          <div class="page-title">
+            EmoSpark-家长客户端
+          </div>
+        </div>
+        
+        <div class="right-actions">
+          <!-- <div class="user-info-mini">
+            <span class="welcome-text">欢迎您！</span>
+
+            <!-- 只有大屏才显示用户名+头像 -->
+            <!-- <template v-if="!isMiniWelcome">
+              <span class="username-text">{{ userData.username }}</span>
+              <n-avatar round :size="40" class="mini-avatar">{{ userInitials }}</n-avatar>
+            </template>
+          </div> --> 
+
+          <!-- 账户管理按钮，也只在大屏显示 -->
+          <template v-if="!isMiniWelcome">
+            <n-button type="primary" class="account-btn" @click="handleLogout">
+              <template #icon><n-icon><user-outlined /></n-icon></template>
+              账户管理
+            </n-button>
+          </template>
         </div>
       </div>
-      
+
       <!-- 内容显示区域，通过路由切换 -->
       <div class="main-content">
         <router-view></router-view>
       </div>
     </div>
+    
+    <!-- 遮罩层，用于小屏幕下点击关闭菜单 -->
+    <div v-if="!isCollapsed && isMobile" class="menu-overlay" @click="closeMenu"></div>
   </div>
 </template>
 
-
 <script lang="ts">
-import { defineComponent, computed, ref } from 'vue';
+import { defineComponent, computed, ref, onMounted, onBeforeUnmount, h, type ComponentOptionsMixin, type ComponentProvideOptions, type DefineComponent, type PublicProps } from 'vue';
 import { useRouter } from 'vue-router';
 import { NMenu, NAvatar, NButton, NIcon } from 'naive-ui';
-import { UserOutlined } from '@vicons/antd';
+import { UserOutlined, MenuOutlined } from '@vicons/antd';
 
-export default defineComponent({ // Vue 3 的标准组件定义方式
+export default defineComponent({
   name: 'MainLayout',
   components: {
     NMenu,
     NAvatar,
     NButton,
     NIcon,
-    UserOutlined
+    UserOutlined,
+    MenuOutlined
   },
   setup() {
     const router = useRouter();
-    
-    // ！！！用户信息（API获取）
+    const isCollapsed = ref(false); // 左侧菜单是否收起
+    const isMiniWelcome = ref(false); // 是否缩小欢迎区域
+    const isMobile = ref(false); // 是否为移动设备视图
+
+    // 检查屏幕尺寸并相应调整UI
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      if (width <= 768) {
+        isCollapsed.value = true;
+        isMiniWelcome.value = true;
+        isMobile.value = true;
+      } else if (width <= 1024) {
+        isCollapsed.value = true;
+        isMiniWelcome.value = false;
+        isMobile.value = false;
+      } else {
+        isCollapsed.value = false;
+        isMiniWelcome.value = false;
+        isMobile.value = false;
+      }
+    };
+
+    onMounted(() => {
+      window.addEventListener('resize', checkScreenSize);
+      checkScreenSize(); // 初次加载时检查一次
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', checkScreenSize);
+    });
+
+    // 切换菜单
+    const toggleMenu = () => {
+      isCollapsed.value = !isCollapsed.value;
+    };
+
+    // 关闭菜单（用于移动端点击遮罩层时）
+    const closeMenu = () => {
+      isCollapsed.value = true;
+    };
+
+    // 用户信息（API获取）
     const userData = ref({
       username: 'LSY',
-      //可以选择要不要显示，最后看效果
       id: '1817',
-      childrenName:'sugar'
+      childrenName: 'sugar'
     });
-    
-    // 用户名首字母作为头像显示（也可以选择固定头像库中的头像）
+
+    // 用户名首字母作为头像显示
     const userInitials = computed(() => {
       return userData.value.username.charAt(0);
     });
-    
+
     // 计算家长角色显示
     const getParentRole = computed(() => {
       if (userData.value.childrenName) {
@@ -91,64 +150,81 @@ export default defineComponent({ // Vue 3 的标准组件定义方式
       }
       return '未关联儿童';
     });
-    
-    // 菜单选项
-	const menuOptions = [
-	  {
-		label: '儿童成长记录',
-		key: 'childGrowth',
-	  },
-	  {
-		label: '儿童互动',
-		key: 'childCommunication',
-	  },
-	  {
-		label: '儿童信息管理',
-		key: 'childManagement',  
-	  },
-	  {
-		label: '咨询医生',
-		key: 'consultDoctor',
-	  }
-	];
-		
+
+    // 菜单选项，使用renderIcon函数来渲染图标
+    const menuOptions = ref([
+      {
+        label: '儿童成长记录',
+        key: 'childGrowth',
+        icon: renderIcon(MenuOutlined)
+      },
+      {
+        label: '儿童互动',
+        key: 'childCommunication',
+        icon: renderIcon(MenuOutlined)
+      },
+      {
+        label: '儿童信息管理',
+        key: 'childManagement',
+        icon: renderIcon(MenuOutlined)
+      },
+      {
+        label: '咨询医生',
+        key: 'consultDoctor',
+        icon: renderIcon(MenuOutlined)
+      }
+    ]);
+
+    // 渲染图标的辅助函数
+    function renderIcon(icon: DefineComponent<{}, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly<{}>, {}, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>) {
+      return () => h(NIcon, null, { default: () => h(icon) });
+    }
+
     // 当前激活的菜单项
-    const activeKey = ref('childGrowth',);
-    
+    const activeKey = ref('childGrowth');
+
     // 处理菜单点击
-    const handleMenuClick = (key: string) => {
+    const handleMenuClick = (key) => {
       activeKey.value = key;
       router.push({ name: key });
+      // 在移动设备上点击菜单项后关闭菜单
+      if (isMobile.value) {
+        isCollapsed.value = true;
+      }
     };
-	
-    
+
     // 处理退出登录
     const handleLogout = () => {
-      // 实现账户管理功能
       router.push({ name: 'userSettings' });
     };
-    
+
     return {
+      isCollapsed,
+      isMiniWelcome,
+      isMobile,
       userData,
       userInitials,
       menuOptions,
       activeKey,
       handleMenuClick,
       handleLogout,
-      getParentRole
+      getParentRole,
+      toggleMenu,
+      closeMenu
     };
   }
 });
 </script>
 
-
 <style scoped>
 .layout-container {
-  display: flex; 
+  display: flex;
   height: 100vh;
   width: 100%;
+  position: relative;
 }
 
+/* 左侧菜单样式 */
 .side-menu {
   width: 240px;
   background-color: #ffffff;
@@ -157,8 +233,36 @@ export default defineComponent({ // Vue 3 的标准组件定义方式
   flex-direction: column;
   padding: 0 0 20px 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  z-index: 100;
 }
 
+.side-menu.collapsed {
+  width: 80px;
+  padding: 0;
+}
+
+/* 在移动设备上的特殊样式 */
+@media (max-width: 768px) {
+  .side-menu {
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    transform: translateX(0);
+  }
+  
+  .side-menu.collapsed {
+    transform: translateX(-100%);
+  }
+}
+
+/* 收起时隐藏用户信息 */
+.side-menu.collapsed .user-info {
+  display: none;
+}
+
+/* 用户信息样式 */
 .user-info {
   padding: 24px 20px;
   border-bottom: 1px solid #eaeaea;
@@ -226,13 +330,16 @@ export default defineComponent({ // Vue 3 的标准组件定义方式
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* 右侧内容区域 */
 .content-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   background-color: #f5f5f5;
+  transition: margin-left 0.3s ease;
 }
 
+/* 顶部标题栏 */
 .top-bar {
   height: 64px;
   background-color: #ffffff;
@@ -244,11 +351,37 @@ export default defineComponent({ // Vue 3 的标准组件定义方式
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.menu-toggle-btn:hover {
+  background-color: #f0f7ff;
+}
+
+.menu-toggle-btn.active {
+  background-color: #e6f4ff;
+  color: #2080f0;
+}
+
 .page-title {
   font-size: 18px;
   font-weight: bold;
 }
 
+/* 右侧操作区 */
 .right-actions {
   display: flex;
   align-items: center;
@@ -305,9 +438,51 @@ export default defineComponent({ // Vue 3 的标准组件定义方式
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
+/* 主内容区域 */
 .main-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+}
+
+/* 遮罩层，用于移动端关闭菜单 */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 99;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .top-bar {
+    height: 56px;
+    padding: 0 16px;
+  }
+
+  .right-actions {
+    gap: 8px;
+  }
+
+  .user-info-mini {
+    padding: 4px 8px;
+  }
+
+  .page-title {
+    font-size: 16px;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content-area {
+    margin-left: 80px;
+  }
 }
 </style>
