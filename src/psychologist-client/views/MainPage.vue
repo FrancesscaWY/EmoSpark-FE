@@ -29,7 +29,8 @@ const childrenData = ref<ChildInfo[]>([
   { id: 12, name: 'Mia', age: 5, gender: 'Female', phone: '12345678912' }
 ])
 const treatmentDialogVisible = ref(false)
-const selectedChild = ref<ChildInfo|null>(null)
+const selectedChild = ref<ChildInfo>()
+const selectedTreatmentMode = ref('')
 const getRandomColor = (seed: number) => {
   const colors = ['#f56c6c', '#e6a23c', '#67c23a', '#409EFF', '#909399', '#00b894', '#fd79a8']
   return colors[seed % colors.length]
@@ -88,15 +89,6 @@ const router = useRouter()
 const startTreatment = (child: ChildInfo) => {
   selectedChild.value = child
   treatmentDialogVisible.value = true
-  router.push({
-    name:'/psychologist/treatment',
-    query:{
-      name:child.name,
-      age:child.age.toString(),
-      gender:child.gender,
-      phone:child.phone
-    }
-  })
 }
 const removeAssociation = (child: ChildInfo) => {
   message.warning(`已解除与${child.name}`)
@@ -104,13 +96,36 @@ const removeAssociation = (child: ChildInfo) => {
 
 const rowKey = (row: ChildInfo) => row.id
 const confirmTreatment = ()=>{
-  if(selectedChild.value){
-    message.success(`开始治疗${selectedChild.value.name}`)
-  }else{
-   message.warning('没有选择儿童')
+  if(!selectedChild.value){
+    message.warning('没有选择儿童');
+    return;
   }
+  if(selectedTreatmentMode.value === 'remote'){
+    router.push({
+      path:'/psychologist/remote-treatment',
+      query:{
+        name:selectedChild.value.name,
+        age:selectedChild.value.age.toString(),
+        gender:selectedChild.value.gender,
+        phone:selectedChild.value.phone
+      }
+    })
+  }else if(selectedTreatmentMode.value === 'face2face'){
+    router.push({
+      path:'/psychologist/face2face-treatment',
+      query:{
+        name:selectedChild.value.name,
+        age:selectedChild.value.age.toString(),
+        gender:selectedChild.value.gender,
+        phone:selectedChild.value.phone,
+        type: selectedTreatmentMode.value
+      }
+    })
+  }
+  message.success(`开始${selectedTreatmentMode.value==='face2face'?'面对面治疗':'远程治疗'}${selectedChild.value.name}`)
   treatmentDialogVisible.value = false
 }
+
 </script>
 
 <template>
@@ -133,28 +148,39 @@ const confirmTreatment = ()=>{
       />
       </div>
     </n-card>
-  </n-layout>
 
-  <n-modal
-    v-model:show="treatmentDialogVisible"
-    title="确认开始治疗"
-    preset="dialog"
-    :mask-closable="false"
-    style="width:400px"
-  >
-    <div v-if="selectedChild">
-      <p><strong>姓名：</strong>{{ selectedChild.name }}</p>
-      <p><strong>年龄：</strong>{{ selectedChild.age }}</p>
-      <p><strong>性别：</strong>{{ selectedChild.gender }}</p>
-      <p><strong>电话：</strong>{{ selectedChild.phone }}</p>
-    </div>
-    <template #action>
-      <n-button round  type="tertiary" @click="treatmentDialogVisible=false">取消</n-button>
-      <n-button round  @click="confirmTreatment" style="margin-left: 12px;">
-        确认
-      </n-button>
-    </template>
-  </n-modal>
+    <n-modal
+        v-model:show="treatmentDialogVisible"
+        title="开始治疗"
+        preset="dialog"
+        :mask-closable="false"
+        style="width:400px"
+    >
+      <div v-if="selectedChild">
+        <p><strong>姓名：</strong>{{ selectedChild.name }}</p>
+        <p><strong>年龄：</strong>{{ selectedChild.age }}</p>
+        <p><strong>性别：</strong>{{ selectedChild.gender }}</p>
+        <p><strong>电话：</strong>{{ selectedChild.phone }}</p>
+        <div style="margin-top:16px">
+          <n-text strong>选择治疗方式：</n-text>
+          <n-radio-group v-model:value="selectedTreatmentMode">
+            <n-radio value="face2face">
+              面对面治疗
+            </n-radio>
+            <n-radio value="remote">
+              远程治疗
+            </n-radio>
+          </n-radio-group>
+        </div>
+      </div>
+      <template #action>
+        <n-button round  type="tertiary" @click="treatmentDialogVisible=false">取消</n-button>
+        <n-button round  @click="confirmTreatment" style="margin-left: 12px;">
+          确认
+        </n-button>
+      </template>
+    </n-modal>
+  </n-layout>
 </template>
 
 <style scoped>

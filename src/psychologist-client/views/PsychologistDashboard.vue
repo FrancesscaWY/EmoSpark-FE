@@ -1,12 +1,14 @@
 
 <script setup lang="ts">
-import { h,ref } from 'vue'
+import {h, onMounted, ref} from 'vue'
 import { useRouter } from 'vue-router'
 import {type MenuOption, NButton, NAvatar,NMessageProvider} from 'naive-ui'
 import { MenuOutlined } from '@vicons/antd'
 import { NIcon } from 'naive-ui'
 import {HomeOutlined,UsergroupAddOutlined,FileTextOutlined, UserOutlined} from "@vicons/antd";
-
+import FloatingWindow from "../components/FloatingWindow.vue";
+import {useFloatingStore} from "../utils/FloatingStore.ts";
+const floatingStore = useFloatingStore()
 const router = useRouter()
 const activeKey = ref('home')
 
@@ -17,7 +19,7 @@ const menuOptions: MenuOption[] = [
     icon:()=> h(NIcon,null,{default:()=> h(UsergroupAddOutlined)})},
   { label: '工作记录', key: 'records',
     icon:()=> h(NIcon,null,{default:()=> h(FileTextOutlined)})},
-  { label: '用户中心', key: 'home',
+  { label: '用户中心', key: 'personal',
     icon:()=> h(NIcon, null,{default:()=> h(UserOutlined)})}
 ]
 const isCollapsed = ref(false)
@@ -26,6 +28,10 @@ const  handleMenuSelect = (key: string)=> {
   activeKey.value = key
   router.push(`/psychologist/${key}`)
 }
+onMounted(()=>{
+  const currentState = floatingStore.getCurrentFloatingState()
+  console.log('Current Floating State:', currentState)
+})
 
 </script>
 
@@ -94,6 +100,7 @@ const  handleMenuSelect = (key: string)=> {
         </n-message-provider>
       </n-layout-content>
     </n-layout>
+    <FloatingWindow v-if="floatingStore.isFloating"/>
   </n-layout>
 </template>
 
