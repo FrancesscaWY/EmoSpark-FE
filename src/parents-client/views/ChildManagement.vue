@@ -28,14 +28,13 @@
         暂无儿童信息，请添加
       </div>
      
-      <!-- 使用响应式栅格 -->
-      <n-grid 
-        :cols="4" 
-        :x-gap="16" 
-        :y-gap="16"
-        :responsive="responsive"
-      >
-        <n-grid-item v-for="child in filteredChildren" :key="child.id">
+      <!-- 使用固定布局而非居中布局 -->
+      <div class="cards-grid">
+        <div 
+          v-for="child in filteredChildren" 
+          :key="child.id" 
+          class="card-grid-item"
+        >
           <n-card hoverable class="child-card">
             <div class="child-card-content">
               <div class="child-avatar-section">
@@ -82,8 +81,8 @@
               </div>
             </div>
           </n-card>
-        </n-grid-item>
-      </n-grid>
+        </div>
+      </div>
     </div>
     
     <!-- 添加儿童的弹出框 -->
@@ -93,8 +92,67 @@
       title="添加儿童信息"
       style="width: 500px"
     >
-      <!-- 表单内容不变 -->
-      <!-- ... -->
+      <n-form
+        ref="addFormRef"
+        :model="formData"
+        :rules="rules"
+        label-placement="left"
+        label-width="80"
+        require-mark-placement="right-hanging"
+      >
+        <n-form-item label="姓名" path="name">
+          <n-input v-model:value="formData.name" placeholder="请输入儿童姓名" />
+        </n-form-item>
+        
+        <n-form-item label="昵称" path="nickname">
+          <n-input v-model:value="formData.nickname" placeholder="请输入儿童昵称" />
+        </n-form-item>
+        
+        <n-form-item label="性别" path="gender">
+          <n-radio-group v-model:value="formData.gender" @update:value="handleGenderChange">
+            <n-space>
+              <n-radio :value="1">男孩</n-radio>
+              <n-radio :value="0">女孩</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        
+        <n-form-item label="出生日期" path="birthday">
+          <n-date-picker v-model:value="formData.birthday" type="date" clearable />
+        </n-form-item>
+        
+        <n-form-item label="账号" path="username">
+          <n-input v-model:value="formData.username" placeholder="请设置儿童账号" />
+        </n-form-item>
+        
+        <n-form-item label="密码" path="password">
+          <n-input
+            v-model:value="formData.password"
+            type="password"
+            placeholder="请设置儿童账号密码"
+            show-password-on="click"
+          />
+        </n-form-item>
+        
+        <n-form-item label="备注" path="note">
+          <n-input
+            v-model:value="formData.note"
+            type="textarea"
+            placeholder="请输入备注信息（可选）"
+            :autosize="{
+              minRows: 3,
+              maxRows: 5
+            }"
+          />
+        </n-form-item>
+      </n-form>
+      
+      <template #footer>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <n-button @click="cancelAddChild">取消</n-button>
+          <n-button type="primary" @click="handleAddChild">确认添加</n-button>
+        </div>
+      </template>
     </n-modal>
     
     <!-- 编辑儿童对话框 -->
@@ -104,8 +162,67 @@
       title="编辑儿童信息"
       style="width: 500px"
     >
-      <!-- 表单内容不变 -->
-      <!-- ... -->
+      <n-form
+        ref="editFormRef"
+        :model="editFormData"
+        :rules="rules"
+        label-placement="left"
+        label-width="80"
+        require-mark-placement="right-hanging"
+      >
+        <n-form-item label="姓名" path="name">
+          <n-input v-model:value="editFormData.name" placeholder="请输入儿童姓名" />
+        </n-form-item>
+        
+        <n-form-item label="昵称" path="nickname">
+          <n-input v-model:value="editFormData.nickname" placeholder="请输入儿童昵称" />
+        </n-form-item>
+        
+        <n-form-item label="性别" path="gender">
+          <n-radio-group v-model:value="editFormData.gender" @update:value="handleEditGenderChange">
+            <n-space>
+              <n-radio :value="1">男孩</n-radio>
+              <n-radio :value="0">女孩</n-radio>
+            </n-space>
+          </n-radio-group>
+        </n-form-item>
+        
+        <n-form-item label="出生日期" path="birthday">
+          <n-date-picker v-model:value="editFormData.birthday" type="date" clearable />
+        </n-form-item>
+        
+        <n-form-item label="账号" path="username">
+          <n-input v-model:value="editFormData.username" placeholder="请设置儿童账号" />
+        </n-form-item>
+        
+        <n-form-item label="密码" path="password">
+          <n-input
+            v-model:value="editFormData.password"
+            type="password"
+            placeholder="请设置儿童账号密码"
+            show-password-on="click"
+          />
+        </n-form-item>
+        
+        <n-form-item label="备注" path="note">
+          <n-input
+            v-model:value="editFormData.note"
+            type="textarea"
+            placeholder="请输入备注信息（可选）"
+            :autosize="{
+              minRows: 3,
+              maxRows: 5
+            }"
+          />
+        </n-form-item>
+      </n-form>
+      
+      <template #footer>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <n-button @click="showEditChildModal = false">取消</n-button>
+          <n-button type="primary" @click="handleUpdateChild">保存修改</n-button>
+        </div>
+      </template>
     </n-modal>
     
     <!-- 查看详情对话框 -->
@@ -115,8 +232,40 @@
       title="儿童详细信息"
       style="width: 600px"
     >
-      <!-- 详情内容不变 -->
-      <!-- ... -->
+      <div v-if="currentChild" class="child-details-modal">
+        <div class="details-header">
+          <n-avatar round size="large" :src="currentChild.avatar">
+            <template #icon>
+              <n-icon><smile-outlined /></n-icon>
+            </template>
+          </n-avatar>
+          <div>
+            <div class="details-name">{{ currentChild.name }} ({{ currentChild.nickname }})</div>
+            <div style="color: #666;">{{ currentChild.gender === 1 ? '男' : '女'}} · {{ calculateAge(currentChild.birthday) }}</div>
+          </div>
+        </div>
+        
+        <n-divider />
+        
+        <n-descriptions bordered>
+          <n-descriptions-item label="姓名">{{ currentChild.name }}</n-descriptions-item>
+          <n-descriptions-item label="昵称">{{ currentChild.nickname }}</n-descriptions-item>
+          <n-descriptions-item label="性别">{{ currentChild.gender === 1 ? '男' : '女' }}</n-descriptions-item>
+          <n-descriptions-item label="出生日期">{{ formatDate(currentChild.birthday) }}</n-descriptions-item>
+          <n-descriptions-item label="注册日期">{{ formatDate(currentChild.registerDate) }}</n-descriptions-item>
+          <n-descriptions-item label="使用时长">{{ calculateUsageTime(currentChild.registerDate) }}</n-descriptions-item>
+          <n-descriptions-item label="账号名">{{ currentChild.username || '未设置' }}</n-descriptions-item>
+          <n-descriptions-item label="情绪识别最好成绩">{{ currentChild.emotionRecognitionRate || '0' }}%</n-descriptions-item>
+          <n-descriptions-item label="备注" :span="3">{{ currentChild.note || '无' }}</n-descriptions-item>
+        </n-descriptions>
+        
+        <div class="details-actions">
+          <n-button @click="showDetailsModal = false">关闭</n-button>
+          <n-button type="primary" @click="navigateToGrowthRecord(currentChild.id)">
+            查看成长记录
+          </n-button>
+        </div>
+      </div>
     </n-modal>
     
     <!-- 删除确认对话框 -->
@@ -156,7 +305,8 @@ import {
   NDescriptionsItem,
   NGrid,
   NGridItem,
-  NCard
+  NCard,
+  NDivider
 } from 'naive-ui';
 import {
   SearchOutlined,
@@ -178,6 +328,8 @@ interface ChildInfo {
   avatar: string;
   note: string;
   emotionRecognitionRate: number;
+  username?: string;
+  password?: string;
 }
 
 export default defineComponent({
@@ -200,6 +352,7 @@ export default defineComponent({
     NGrid,
     NGridItem,
     NCard,
+    NDivider,
     SearchOutlined,
     PlusOutlined,
     EditOutlined,
@@ -222,12 +375,12 @@ export default defineComponent({
     
     // 响应式栅格配置
     const responsive = {
-      xs: { cols: 1 },    // <640px 手机，每行显示1个
-      s: { cols: 2 },     // >=640px 平板，每行显示2个
-      m: { cols: 3 },     // >=1024px 小屏幕，每行显示3个
-      l: { cols: 4 },     // >=1280px 大屏幕，每行显示4个
-      xl: { cols: 5 },    // >=1536px 特大屏幕，每行显示5个
-      xxl: { cols: 6 }    // >=1920px 超大屏幕，每行显示6个
+      xs: { cols: 1 },  // <640px 手机，每行显示1个
+      s: { cols: 2 },   // >=640px 平板，每行显示2个
+      m: { cols: 3 },   // >=1024px 小屏幕，每行显示3个
+      l: { cols: 4 },   // >=1280px 大屏幕，每行显示4个
+      xl: { cols: 5 },  // >=1536px 特大屏幕，每行显示5个
+      xxl: { cols: 6 } // >=1920px 超大屏幕，每行显示6个
     }
     
     // 头像设置
@@ -251,6 +404,16 @@ export default defineComponent({
         type: 'number',
         trigger: ['change'],
         message: '请选择性别'
+      },
+      username: {
+        required: true,
+        trigger: ['blur', 'input'],
+        message: '请设置账号'
+      },
+      password: {
+        required: true,
+        trigger: ['blur', 'input'],
+        message: '请设置密码'
       }
     };
     
@@ -261,7 +424,9 @@ export default defineComponent({
       birthday: null as Date | null,
       gender: 1,
       avatar: boyAvatar,
-      note: ''
+      note: '',
+      username: '',
+      password: ''
     });
     
     // 编辑儿童表单数据
@@ -274,7 +439,9 @@ export default defineComponent({
       avatar: boyAvatar,
       note: '',
       registerDate: new Date(),
-      emotionRecognitionRate: 0
+      emotionRecognitionRate: 0,
+      username: '',
+      password: ''
     });
     
     // 处理性别选择变化 - 设置对应头像
@@ -298,7 +465,9 @@ export default defineComponent({
         registerDate: new Date('2024-03-25'),
         avatar: girlAvatar,
         note: '对情绪的把控不到位，但是对人的表情感兴趣',
-        emotionRecognitionRate: 85
+        emotionRecognitionRate: 85,
+        username: 'beverly2018',
+        password: '123456'
       },
       {
         id: '2',
@@ -309,7 +478,9 @@ export default defineComponent({
         registerDate: new Date('2023-04-12'),
         avatar: girlAvatar,
         note: '对声音声调很敏感',
-        emotionRecognitionRate: 78
+        emotionRecognitionRate: 78,
+        username: 'eva2016',
+        password: '123456'
       }
     ]);
     
@@ -373,6 +544,8 @@ export default defineComponent({
       editFormData.avatar = child.avatar;
       editFormData.note = child.note;
       editFormData.emotionRecognitionRate = child.emotionRecognitionRate;
+      editFormData.username = child.username || '';
+      editFormData.password = child.password || '';
       
       showEditChildModal.value = true;
     };
@@ -418,7 +591,9 @@ export default defineComponent({
             registerDate: new Date(),
             avatar: formData.gender === 1 ? boyAvatar : girlAvatar,
             note: formData.note,
-            emotionRecognitionRate: 0
+            emotionRecognitionRate: 0,
+            username: formData.username,
+            password: formData.password
           };
           
           childrenData.value.push(newChild);
@@ -475,6 +650,8 @@ export default defineComponent({
       formData.gender = 1;
       formData.avatar = boyAvatar;
       formData.note = '';
+      formData.username = '';
+      formData.password = '';
     };
     
     // 计算年龄
@@ -514,7 +691,7 @@ export default defineComponent({
     
     // 格式化日期
     const formatDate = (date: Date | null) => {
-      if (!date) return '';
+      if (!date) return '未设置';
       
       const d = new Date(date);
       const year = d.getFullYear();
@@ -569,7 +746,8 @@ export default defineComponent({
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 10px;
+  box-sizing: border-box;
 }
 
 .section-title {
@@ -584,7 +762,7 @@ export default defineComponent({
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 16px;
-  padding:10px;
+  padding: 10px;
 }
 
 .action-bar .n-input-group {
@@ -605,10 +783,25 @@ export default defineComponent({
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* 新增网格布局 */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.card-grid-item {
+  width: 100%;
+}
+
 .child-card {
   height: 100%;
-  min-width: 250px;
+  width: 100%;
   transition: transform 0.3s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .child-card:hover {
@@ -619,6 +812,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 220px;
 }
 
 .child-avatar-section {
@@ -694,14 +888,90 @@ export default defineComponent({
   margin-top: 20px;
 }
 
-/* 适配小屏幕 */
-@media (max-width: 640px) {
+/* 响应式调整 */
+@media (max-width: 768px) {
   .action-bar {
     flex-direction: column;
   }
-  
+   
   .action-bar .n-input-group {
     width: 100%;
   }
+}
+
+@media (max-width: 480px) {
+  .child-avatar-section {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .child-names {
+    align-items: center;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    margin-bottom: 10px;
+  }
+  
+  .info-label {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+}
+
+.child-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* 按钮悬停效果 */
+.child-actions button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 详情页面样式 */
+.child-details-modal .n-descriptions {
+  margin-top: 15px;
+}
+
+/* 表单样式美化 */
+.n-form-item {
+  margin-bottom: 20px;
+}
+
+/* 添加动画效果 */
+.card-grid-item {
+  transition: all 0.3s ease;
+}
+
+/* 确保子项高度一致 */
+.child-card-content {
+  min-height: 200px;
+}
+
+/* 头像样式调整 */
+.child-avatar-section .n-avatar {
+  border: 2px solid #f0f0f0;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 改进删除按钮样式 */
+button.n-button--error-quaternary:hover {
+  background-color: rgba(255, 77, 79, 0.1) !important;
+}
+
+/* 模态框内部间距 */
+.n-modal .n-card-header {
+  padding-bottom: 16px;
+}
+
+.n-modal .n-card__content {
+  padding-top: 0;
+}
+
+/* 表格间隔交替色 */
+.n-descriptions tbody tr:nth-child(even) {
+  background-color: #fafafa;
 }
 </style>

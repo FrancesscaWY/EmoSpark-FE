@@ -41,17 +41,6 @@
         </div>
         
         <div class="right-actions">
-          <!-- <div class="user-info-mini">
-            <span class="welcome-text">欢迎您！</span>
-
-            <!-- 只有大屏才显示用户名+头像 -->
-            <!-- <template v-if="!isMiniWelcome">
-              <span class="username-text">{{ userData.username }}</span>
-              <n-avatar round :size="40" class="mini-avatar">{{ userInitials }}</n-avatar>
-            </template>
-          </div> --> 
-
-          <!-- 账户管理按钮，也只在大屏显示 -->
           <template v-if="!isMiniWelcome">
             <n-button type="primary" class="account-btn" @click="handleLogout">
               <template #icon><n-icon><user-outlined /></n-icon></template>
@@ -76,7 +65,14 @@
 import { defineComponent, computed, ref, onMounted, onBeforeUnmount, h, type ComponentOptionsMixin, type ComponentProvideOptions, type DefineComponent, type PublicProps } from 'vue';
 import { useRouter } from 'vue-router';
 import { NMenu, NAvatar, NButton, NIcon } from 'naive-ui';
-import { UserOutlined, MenuOutlined } from '@vicons/antd';
+import { 
+  UserOutlined, 
+  MenuOutlined,
+  HistoryOutlined,
+  MessageOutlined,
+  ProfileOutlined,
+  MedicineBoxOutlined
+} from '@vicons/antd';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -86,7 +82,11 @@ export default defineComponent({
     NButton,
     NIcon,
     UserOutlined,
-    MenuOutlined
+    MenuOutlined,
+    HistoryOutlined,
+    MessageOutlined,
+    ProfileOutlined,
+    MedicineBoxOutlined
   },
   setup() {
     const router = useRouter();
@@ -151,40 +151,40 @@ export default defineComponent({
       return '未关联儿童';
     });
 
-    // 菜单选项，使用renderIcon函数来渲染图标
-    const menuOptions = ref([
-      {
-        label: '儿童成长记录',
-        key: 'childGrowth',
-        icon: renderIcon(MenuOutlined)
-      },
-      {
-        label: '儿童互动',
-        key: 'childCommunication',
-        icon: renderIcon(MenuOutlined)
-      },
-      {
-        label: '儿童信息管理',
-        key: 'childManagement',
-        icon: renderIcon(MenuOutlined)
-      },
-      {
-        label: '咨询医生',
-        key: 'consultDoctor',
-        icon: renderIcon(MenuOutlined)
-      }
-    ]);
-
     // 渲染图标的辅助函数
     function renderIcon(icon: DefineComponent<{}, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly<{}>, {}, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>) {
       return () => h(NIcon, null, { default: () => h(icon) });
     }
 
+    // 菜单选项，不再使用不同的背景色
+    const menuOptions = ref([
+      {
+        label: '儿童成长记录',
+        key: 'childGrowth',
+        icon: renderIcon(HistoryOutlined)
+      },
+      {
+        label: '儿童互动',
+        key: 'childCommunication',
+        icon: renderIcon(MessageOutlined)
+      },
+      {
+        label: '儿童信息管理',
+        key: 'childManagement',
+        icon: renderIcon(ProfileOutlined)
+      },
+      {
+        label: '咨询医生',
+        key: 'consultDoctor',
+        icon: renderIcon(MedicineBoxOutlined)
+      }
+    ]);
+
     // 当前激活的菜单项
     const activeKey = ref('childGrowth');
 
     // 处理菜单点击
-    const handleMenuClick = (key) => {
+    const handleMenuClick = (key: string) => {
       activeKey.value = key;
       router.push({ name: key });
       // 在移动设备上点击菜单项后关闭菜单
@@ -237,7 +237,27 @@ export default defineComponent({
   z-index: 100;
 }
 
+:deep(.n-menu-item) {
+  margin: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
 
+:deep(.n-menu-item:hover) {
+  background-color: #f0f7ff;
+}
+
+:deep(.n-menu-item-content-header) {
+  font-weight: 500;
+}
+
+:deep(.n-menu-item-content__icon-placeholder) {
+  margin-right: 4px;
+}
+
+:deep(.n-menu-item--selected) {
+  background-color: #e6f4ff !important;
+}
 
 .side-menu.collapsed {
   width: 80px;
@@ -283,7 +303,7 @@ export default defineComponent({
 }
 
 .user-avatar {
-  background-color: #2080f0;
+  background-color: #2080f0; /* 保持蓝色背景 */
   color: white;
   font-size: 32px;
   font-weight: bold;
@@ -390,41 +410,6 @@ export default defineComponent({
   gap: 16px;
 }
 
-.user-info-mini {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background-color: #f3f7fd;
-  padding: 6px 16px;
-  border-radius: 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.user-info-mini:hover {
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-  background-color: #e9f1fd;
-}
-
-.welcome-text {
-  color: #666;
-  font-size: 10px;
-}
-
-.username-text {
-  color: #333;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.mini-avatar {
-  background-color: #2080f0;
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(32, 128, 240, 0.3);
-  border: 2px solid #ffffff;
-}
-
 .account-btn {
   display: flex;
   align-items: center;
@@ -467,10 +452,6 @@ export default defineComponent({
 
   .right-actions {
     gap: 8px;
-  }
-
-  .user-info-mini {
-    padding: 4px 8px;
   }
 
   .page-title {
