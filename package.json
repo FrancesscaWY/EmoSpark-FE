@@ -9,16 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@iconify-icons/fa": "^1.2.4",
+    "@iconify-icons/mdi": "^1.2.48",
     "@vicons/antd": "^0.13.0",
+    "@vicons/ionicons5": "^0.13.0",
     "chart.js": "^4.4.9",
     "d3": "^7.9.0",
+    "dayjs": "^1.11.13",
     "naive-ui": "^2.41.0",
+    "pinia": "^3.0.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
     "@types/d3": "^7.4.3",
+    "@types/node": "^22.15.1",
     "@vitejs/plugin-vue": "^5.2.2",
     "@vue/tsconfig": "^0.7.0",
     "typescript": "~5.7.2",

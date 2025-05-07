@@ -11,6 +11,8 @@ const routes = [
     //...psychologistRoutes
 ]
 
+
+
 const router = createRouter({
     history: createWebHistory(),
     routes
