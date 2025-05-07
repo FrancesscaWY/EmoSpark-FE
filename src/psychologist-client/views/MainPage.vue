@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref, h} from "vue";
-import {NAvatar, NButton, useMessage} from "naive-ui";
+import {NAvatar, NButton, NInput, useMessage} from "naive-ui";
 import {useRouter} from "vue-router";
 
 interface ChildInfo {
@@ -126,20 +126,46 @@ const confirmTreatment = ()=>{
   treatmentDialogVisible.value = false
 }
 
+const searchQuery = ref('')
+const search = ()=>{
+  const query = searchQuery.value.toLowerCase();
+  filterData.value = childrenData.value.filter(child =>{
+    return (
+      // child.id.includes(query)||
+          child.name.toLowerCase().includes(query)
+        // ||child.age.toLowerCase().includes(query)
+        ||child.gender.toLowerCase().includes(query)
+        ||child.phone.toLowerCase().includes(query)
+    );
+  })
+}
+
+const filterData = ref(childrenData.value)
+
 </script>
 
 <template>
   <n-layout style="height: 100vh; display: flex; justify-content: center; align-items: center;">
     <n-card>
+      <n-row>
+        <n-col :span="8">
       <n-text style="font-size:16px" strong>
-        我关联的儿童
+        我关id联的儿童
       </n-text>
+        </n-col>
+        <n-col :span="16">
+<!--          <n-card justify="start" style="margin-bottom: 20px; width: 90vw" >-->
+            <n-input v-model:value="searchQuery" placeholder="请输入关键字进行搜索" clearable style="width: 80%; margin-right: 20px"/>
+            <n-button type="primary" @click="search">搜索</n-button>
+<!--          </n-card>-->
+        </n-col>
+      </n-row>
     </n-card>
     <n-card style="overflow-x: auto;" >
       <div style="min-width: 900px;">
       <n-data-table
           :columns="columns"
-          :data="childrenData"
+          :data="filterData"
           :row-key="rowKey"
           :max-height="500"
           :table-layout="'fixed'"
