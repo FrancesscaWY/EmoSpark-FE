@@ -171,7 +171,7 @@ const saveNumber = ()=>{
         <br/>
          <n-text style="font-size: 16px">帐号：{{user.account}}</n-text>
          <br/>
-       <n-text style="font-size: 16px">年龄：{{user.age}} | 性别：{{user.gender}} | 工作机构：{{user.organization}}</n-text>
+       <n-text style="font-size: 16px">年龄：{{user.age}} |  性别：{{user.gender}} |  工作机构：{{user.organization}}</n-text>
        </n-card>
        <n-card>
          <n-text>{{user.profile}}</n-text>
