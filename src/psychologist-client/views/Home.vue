@@ -51,6 +51,7 @@ const saveChanges = ()=>{
 
 const isChangePasswordModalVisible = ref(false);
 const isAddAccountModalVisible = ref(false)
+const isEditingNumber = ref(false)
 const isPhoneBindModalVisible = ref(false)
 const isWechatBindModalVisible = ref(false)
 const isDeviceManagementModalVisible = ref(false)
@@ -62,8 +63,9 @@ const confirmPassword = ref('')
 const newAccount = ref('')
 const newAccountPassword = ref('')
 
-const phoneNumber = ref('')
-const wechatNumber = ref('')
+const phoneNumber = ref(user.value.phone)
+const wechatNumber = ref(user.value.wechat)
+
 // 操作方法
 const openChangePasswordModal = () => {
   isChangePasswordModalVisible.value = true;
@@ -75,10 +77,10 @@ const closeChangePasswordModal = () => {
 
 const changePassword = ()=>{
   if(newPassword.value === confirmPassword.value){
-    message.success('密码修改成功:', newPassword.value);
+    message.success(`密码修改成功:${newPassword.value}` );
     closeChangePasswordModal();
   }else{
-    console.log('两次密码输入不一致');
+    message.error('两次密码输入不一致,请重新输入');
   }
 }
 const openAddAccountModal = () => {
@@ -90,33 +92,33 @@ const closeAddAccountModal = () => {
 };
 
 const addAccount = ()=>{
-  message.success(`添加帐号：`,newAccount.value,'密码:',newAccountPassword.value)
+  message.success(`添加帐号：${newAccount.value}, 密码：${newAccountPassword.value}`)
   closeAddAccountModal();
 }
-const openPhoneBindModal = () => {
-  isPhoneBindModalVisible.value = true;
-};
+// const openPhoneBindModal = () => {
+//   isPhoneBindModalVisible.value = true;
+// };
 
 const closePhoneBindModal = () => {
   isPhoneBindModalVisible.value = false;
 };
-
-const bindPhone = ()=>{
-  message.success(`绑定手机号:`,phoneNumber.value);
-  closePhoneBindModal()
-}
-const openWechatBindModal = () => {
-  isWechatBindModalVisible.value = true;
-};
+//
+// const bindPhone = ()=>{
+//   message.success(`绑定手机号:${phoneNumber.value}`);
+//   closePhoneBindModal()
+// }
+// const openWechatBindModal = () => {
+//   isWechatBindModalVisible.value = true;
+// };
 
 const closeWechatBindModal = () => {
   isWechatBindModalVisible.value = false;
 };
 
-const bindWechat = () => {
-  message.success('绑定微信号:', wechatNumber.value);
-  closeWechatBindModal();
-};
+// const bindWechat = () => {
+//   message.success(`绑定微信号:${wechatNumber.value}`);
+//   closeWechatBindModal();
+// };
 const openDeviceManagementModal = () => {
   isDeviceManagementModalVisible.value = true;
 };
@@ -137,6 +139,22 @@ const removeDevice = () => {
 const logoutAccount = () => {
   message.success('注销帐号');
 };
+
+const editNumber = ()=>{
+  isEditingNumber.value = true
+  phoneNumber.value = user.value.phone
+  wechatNumber.value = user.value.wechat
+}
+const cancelNumber = ()=>{
+  isEditingNumber.value = false
+  phoneNumber.value = user.value.phone
+  wechatNumber.value = user.value.wechat
+}
+const saveNumber = ()=>{
+  user.value.phone = phoneNumber.value
+  user.value.wechat = wechatNumber.value
+  isEditingNumber.value = false
+}
 
 </script>
 
@@ -166,24 +184,26 @@ const logoutAccount = () => {
       <n-collapse :default-expanded-keys="['personal']">
         <n-collapse-item name="personal" title="个人资料">
           <n-card>
-            <div>
+            <n-card>
               <n-row>
-              <n-col :span="8"><strong>用户名:</strong></n-col>
-              <n-col :span="16">
+              <n-col :span="6">用户名:</n-col>
+              <n-col :span="18">
                 <span v-if="!isEditing">{{user.name}}</span>
                 <n-input v-if="isEditing" v-model:value="editableUser.name" placeholder="请输入用户名" />
               </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8"><strong>年龄：</strong></n-col>
-                <n-col :span="16">
+                <n-col :span="6">年龄：</n-col>
+                <n-col :span="18">
                   <span v-if="!isEditing"> {{user.age}}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.age" placeholder="请输入年龄"/>
                 </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8"><strong>性别：</strong></n-col>
-                <n-col :span="16">
+                <n-col :span="6">性别：</n-col>
+                <n-col :span="18">
                   <span v-if="!isEditing">{{ user.gender }}</span>
                   <n-select
                       v-if="isEditing"
@@ -192,57 +212,65 @@ const logoutAccount = () => {
                       placeholder="请选择性别"/>
                 </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8"><strong>帐号：</strong></n-col>
-                <n-col :span="16">
+                <n-col :span="6">帐号：</n-col>
+                <n-col :span="18">
                   <span v-if="!isEditing">{{ user.account }}</span>
                   <n-input disabled v-if="isEditing" v-model:value="editableUser.account" placeholder="请输入负责儿童数量" />
                 </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8"><strong>邮箱：</strong></n-col>
-                <n-col :span="16">
+                <n-col :span="6">邮箱：</n-col>
+                <n-col :span="18">
                   <span v-if="!isEditing">{{ user.email }}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.email" placeholder="请输入邮箱" />
                 </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8"><strong>手机号：</strong></n-col>
-                <n-col :span="16">
+                <n-col :span="6">手机号：</n-col>
+                <n-col :span="18">
                   <span v-if="!isEditing">{{ user.phone }}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.phone" placeholder="请输入手机号" />
                 </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8"><strong>工作机构：</strong></n-col>
-                <n-col :span="16">
+                <n-col :span="6">工作机构：</n-col>
+                <n-col :span="18">
                   <span v-if="!isEditing">{{ user.organization }}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.organization" placeholder="请输入工作机构" />
-                </n-col>6
+                </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8"><strong>负责儿童数量：</strong></n-col>
-                <n-col :span="16">
+                <n-col :span="6">负责儿童数量：</n-col>
+                <n-col :span="18">
                   <span v-if="!isEditing">{{ user.childrenCount }}</span>
                   <n-input disabled v-if="isEditing" v-model:value="editableUser.childrenCount" placeholder="请输入负责儿童数量" />
                 </n-col>
               </n-row>
+              <n-divider />
               <n-row>
-                <n-col :span="8">
-                  <strong>简介：</strong>
+                <n-col :span="6">
+                  简介：
                 </n-col>
-                <n-col :span="16">
+                <n-col :span="18">
                   <span v-if="!isEditing">{{user.profile}}</span>
                   <n-input v-if="isEditing"  v-model:value="editableUser.profile" placeholder="请输入简介"></n-input>
                 </n-col>
               </n-row>
-            </div>
+            </n-card>
+            <n-card>
+              <n-button v-if="!isEditing" type="primary" @click="startEditing" style="margin-right: 20px;margin-top: 10px">编辑</n-button>
+              <div style="margin-top: 20px; display:flex;justify-content: space-around" >
+                <n-button v-if="isEditing" type="default" @click="cancelEditing">取消</n-button>
+                <n-button v-if="isEditing" type="primary" @click="saveChanges">保存</n-button>
+              </div>
+            </n-card>
           </n-card>
-          <div style="margin-top: 20px; display:flex;justify-content: space-around" >
-            <n-button v-if="!isEditing" type="primary" @click="startEditing">编辑</n-button>
-            <n-button v-if="isEditing" type="default" @click="cancelEditing">取消</n-button>
-            <n-button v-if="isEditing" type="primary" @click="saveChanges">保存</n-button>
-          </div>
         </n-collapse-item>
         <n-collapse-item name="security" title="帐号安全">
           <n-card title="帐号管理" style="margin-bottom: 20px;">
@@ -251,26 +279,67 @@ const logoutAccount = () => {
                 <p><strong>当前登录帐号：</strong>{{ user.account }}</p>
               </n-col>
               <n-col :span="12">
-                <n-button type="primary" @click="openAddAccountModal">切换其他帐号</n-button>
+                <n-button type="primary" size="small" @click="openAddAccountModal">切换其他帐号</n-button>
               </n-col>
             </n-row>
           </n-card>
 
           <n-card title="帐号关联" style="margin-bottom: 20px">
             <n-row>
-              <n-col :span="12">
-                <p><strong>手机号：</strong>{{ user.phone }}</p>
+              <n-col :span="8">
+                <p><strong>手机号：</strong></p>
               </n-col>
-              <n-col :span="12">
-                <n-button type="primary" @click="openPhoneBindModal">绑定手机号</n-button>
+              <n-col :span="16">
+                <span v-if="!isEditingNumber">{{user.phone}}</span>
+                <n-input  v-if="isEditingNumber" v-model:value="phoneNumber" placeholder="请输入关联手机号"></n-input>
               </n-col>
             </n-row>
             <n-row>
-              <n-col :span="12">
-                <p><strong>微信号：</strong>{{ user.wechat }}</p>
-              </n-col>
-              <n-col :span="12">
-                <n-button type="primary" @click="openWechatBindModal">绑定微信号</n-button>
+            <n-col :span="8">
+              <p><strong>微信号：</strong></p>
+            </n-col>
+            <n-col :span="16">
+              <span v-if="!isEditingNumber">{{user.wechat}}</span>
+              <n-input  v-if="isEditingNumber" v-model:value="wechatNumber" placeholder="请输入关联手机号"></n-input>
+            </n-col>
+            </n-row>
+<!--            <n-row>-->
+<!--              <n-col :span="8">-->
+<!--                <p><strong>手机号：</strong></p>-->
+<!--              </n-col>-->
+<!--              <n-col :span="16">-->
+<!--                <span v-if="!isEditing">{{user.phone}}</span>-->
+<!--                <n-input  v-if="isEditing" v-model:value="phoneNumber" placeholder="请输入关联手机号"></n-input>-->
+<!--              </n-col>an="12">-->
+<!--                <p><strong>微信号：</strong>{{ user.wechat }}</p>-->
+<!--              </n-col>-->
+<!--              <n-col :span="12">-->
+<!--                <n-button type="primary" @click="openWechatBindModal">绑定微信号</n-button>-->
+<!--              </n-col>-->
+<!--            </n-row>-->
+            <n-row>
+              <n-col :span="24" class="action-col">
+                <n-button
+                    v-if="!isEditingNumber"
+                    style="cursor: pointer; margin-right: 10px;"
+                    type="primary"
+                    @click="editNumber"
+                    size="small"
+                >编辑</n-button>
+                <n-button
+                    v-if="isEditingNumber"
+                    type="default"
+                    style="cursor: pointer; margin-right: 10px;"
+                    @click="saveNumber"
+                    size="small"
+                >保存</n-button>
+                <n-button
+                    v-if="isEditingNumber"
+                    type="warning"
+                    style="cursor: pointer; margin-right: 10px;"
+                    @click="cancelNumber"
+                    size="small"
+                >取消</n-button>
               </n-col>
             </n-row>
           </n-card>
@@ -278,13 +347,16 @@ const logoutAccount = () => {
           <n-card title="安全管理">
             <n-row style="display: flex; justify-content: space-around">
               <n-col :span="8">
-                <n-button type="primary" @click="openChangePasswordModal">修改密码</n-button>
+                <n-button type="primary" @click="openChangePasswordModal"
+                          size="small" >修改密码</n-button>
               </n-col>
               <n-col :span="8">
-                <n-button type="default" @click="openDeviceManagementModal">登录设备管理</n-button>
+                <n-button type="default" @click="openDeviceManagementModal"
+                          size="small">登录设备管理</n-button>
               </n-col>
               <n-col :span="8">
-                <n-button type="error" @click="logoutAccount">注销帐号</n-button>
+                <n-button type="error" @click="logoutAccount"
+                          size="small">注销帐号</n-button>
               </n-col>
             </n-row>
           </n-card>
@@ -315,9 +387,26 @@ const logoutAccount = () => {
   </n-modal>
 
   <n-modal v-model:show="isChangePasswordModalVisible" title="修改密码" @cancel="closeChangePasswordModal" @confirm="changePassword">
-    <n-input v-model:value="oldPassword" type="password" placeholder="请输入旧密码" style="margin-bottom: 10px"/>
-    <n-input v-model:value="newPassword" type="password" placeholder="请输入新密码" style="margin-bottom: 10px"/>
-    <n-input v-model:value="confirmPassword" type="password" placeholder="确认新密码" />
+    <n-card title="修改密码" style="width: 500px">
+      <n-form>
+        <n-form-item label="用户">
+          <n-input disabled :value="user.name"/>
+        </n-form-item>
+        <n-form-item required label="旧密码">
+          <n-input v-model:value="oldPassword" type="password" placeholder="请输入旧密码" style="margin-bottom: 10px"/>
+        </n-form-item>
+        <n-form-item required label="新密码">
+          <n-input v-model:value="newPassword" type="password" placeholder="请输入新密码" style="margin-bottom: 10px"/>
+        </n-form-item>
+        <n-form-item required label="确认新密码">
+          <n-input v-model:value="confirmPassword" type="password" placeholder="确认新密码" />
+        </n-form-item>
+      </n-form>
+      <div style="display: flex; justify-content: space-around">
+        <n-button @click="isChangePasswordModalVisible = false">取消</n-button>
+        <n-button @click="changePassword">确认</n-button>
+      </div>
+    </n-card>
   </n-modal>
 
   <!-- 添加帐号弹窗（假设用户可以输入新的帐号） -->
@@ -335,15 +424,15 @@ const logoutAccount = () => {
 
 
   <!-- 绑定手机号弹窗 -->
-  <n-modal v-model:show="isPhoneBindModalVisible" title="绑定手机号" @cancel="closePhoneBindModal" @confirm="bindPhone">
-    <n-input v-model:value="phoneNumber" placeholder="请输入手机号" />
-  </n-modal>
+<!--  <n-modal v-model:show="isPhoneBindModalVisible" title="绑定手机号" @cancel="closePhoneBindModal" @confirm="bindPhone">-->
+<!--    <n-input v-model:value="phoneNumber" placeholder="请输入手机号" />-->
+<!--  </n-modal>-->
 
 
-  <!-- 绑定微信号弹窗 -->
-  <n-modal v-model:show="isWechatBindModalVisible" title="绑定微信号" @cancel="closeWechatBindModal" @confirm="bindWechat">
-    <n-input v-model:value="wechatNumber" placeholder="请输入微信号" />
-  </n-modal>
+<!--  &lt;!&ndash; 绑定微信号弹窗 &ndash;&gt;-->
+<!--  <n-modal v-model:show="isWechatBindModalVisible" title="绑定微信号" @cancel="closeWechatBindModal" @confirm="bindWechat">-->
+<!--    <n-input v-model:value="wechatNumber" placeholder="请输入微信号" />-->
+<!--  </n-modal>-->
 
 
   <!-- 设备管理弹窗（假设用户查看或删除登录设备） -->
