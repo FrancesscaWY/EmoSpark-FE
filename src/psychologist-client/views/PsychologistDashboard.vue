@@ -7,7 +7,10 @@ import { MenuOutlined } from '@vicons/antd'
 import { NIcon } from 'naive-ui'
 import {HomeOutlined,UsergroupAddOutlined,FileTextOutlined, UserOutlined} from "@vicons/antd";
 import FloatingWindow from "../components/FloatingWindow.vue";
-import {useFloatingStore} from "../utils/FloatingStore.ts";
+import {useFloatingStore} from "../utils/FloatingStore";
+import {useUserStore} from "@/utils/userStore";
+
+const userStore = useUserStore().getUser()
 const floatingStore = useFloatingStore()
 const router = useRouter()
 const activeKey = ref('home')
@@ -23,7 +26,8 @@ const menuOptions: MenuOption[] = [
     icon:()=> h(NIcon, null,{default:()=> h(UserOutlined)})}
 ]
 const isCollapsed = ref(false)
-const userName = ref<string>('张医生')
+const userName = userStore?.name
+
 const  handleMenuSelect = (key: string)=> {
   activeKey.value = key
   router.push(`/psychologist/${key}`)

@@ -12,6 +12,7 @@ export const useUserStore = defineStore('user',{
             gender: string
             email: string
             phone: string
+            work_unit: string
         }
     }),
 
@@ -21,6 +22,9 @@ export const useUserStore = defineStore('user',{
         },
         clearUser(){
             this.userInfo = null
+        },
+        getUser(){
+            return this.userInfo
         }
     }
 

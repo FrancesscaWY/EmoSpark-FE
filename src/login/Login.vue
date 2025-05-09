@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {useMessage} from 'naive-ui'
-import {register,generateRandomAccount,checkAccountExists} from "../api/login/register.ts";
-import {useUserStore} from "../utils/userStore.ts";
+import {register,generateRandomAccount,checkAccountExists} from "@/api/login/register";
+import {useUserStore} from "@/utils/userStore";
 // import {acceptHMRUpdate} from "pinia";
 // import background from 'src/login/assets/background.png'
-import {login} from "../api/login/login.ts"
+import {login} from "@/api/login/login"
 import router from "../router";
 
 const userStore = useUserStore()
@@ -50,9 +50,9 @@ const handleLogin = async()=>{
   const result = await login(loginData)
 
   if(result){
-
+    console.log('用户信息：',result)
     // 保存全局用户信息
-    userStore.setUser(result.user)
+    userStore.setUser(result)
 
     if(loginForm.value.userType === 'doctor'){
       message.success('登录成功，跳转到医生客户端');

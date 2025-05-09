@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import { useMessage,NCard, NAvatar, NButton, NCollapse, NCollapseItem} from 'naive-ui';
+import {useUserStore} from "@/utils/userStore";
+const userStore = useUserStore().getUser()
+
 const message = useMessage()
-const user = ref({
-  name: '张医生',
-  account: 'qefdsads1234',
-  age:25,
-  gender:'男',
-  email: 'zhangsan@example.com',
-  phone: '1234567890',
-  organization: '某某机构',
+const userInfo = ref({
+  name: userStore?.name,
+  account: userStore?.account,
+  age: userStore?.age,
+  gender: userStore?.gender,
+  email: userStore?.email,
+  phone: userStore?.phone,
+  organization: userStore?.work_unit,
   childrenCount: 5,
   profile: '这是用户的简介',
   wechat: 'wechat_example',
@@ -19,7 +22,7 @@ const genderOptions = [
   {label:'女',value:'女'},
 ]
 const isModalVisible = ref(false);
-const profileText = ref(user.value.profile);
+const profileText = ref(userInfo.value.profile);
 
 const editProfile = ()=>{
   isModalVisible.value = true;
@@ -29,31 +32,31 @@ const closeModal = ()=>{
   isModalVisible.value = false;
 }
 const saveProfile = ()=>{
-  user.value.profile = profileText.value;
+  userInfo.value.profile = profileText.value;
   closeModal();
 }
 
 const isEditing = ref(false)
 const editableUser = ref<any>()
-editableUser.value = user.value
+editableUser.value = userInfo.value
 
 const startEditing = ()=>{
   isEditing.value = true;
 }
 const cancelEditing = ()=>{
-  editableUser.value = {...user.value};
+  editableUser.value = {...userInfo.value};
   isEditing.value = false
 }
 const saveChanges = ()=>{
-  user.value = {...editableUser.value};
+  userInfo.value = {...editableUser.value};
   isEditing.value = false
 }
 
 const isChangePasswordModalVisible = ref(false);
 const isAddAccountModalVisible = ref(false)
 const isEditingNumber = ref(false)
-const isPhoneBindModalVisible = ref(false)
-const isWechatBindModalVisible = ref(false)
+// const isPhoneBindModalVisible = ref(false)
+// const isWechatBindModalVisible = ref(false)
 const isDeviceManagementModalVisible = ref(false)
 
 const oldPassword = ref('')
@@ -63,8 +66,8 @@ const confirmPassword = ref('')
 const newAccount = ref('')
 const newAccountPassword = ref('')
 
-const phoneNumber = ref(user.value.phone)
-const wechatNumber = ref(user.value.wechat)
+const phoneNumber = ref(userInfo.value.phone)
+const wechatNumber = ref(userInfo.value.wechat)
 
 // 操作方法
 const openChangePasswordModal = () => {
@@ -95,30 +98,6 @@ const addAccount = ()=>{
   message.success(`添加帐号：${newAccount.value}, 密码：${newAccountPassword.value}`)
   closeAddAccountModal();
 }
-// const openPhoneBindModal = () => {
-//   isPhoneBindModalVisible.value = true;
-// };
-
-const closePhoneBindModal = () => {
-  isPhoneBindModalVisible.value = false;
-};
-//
-// const bindPhone = ()=>{
-//   message.success(`绑定手机号:${phoneNumber.value}`);
-//   closePhoneBindModal()
-// }
-// const openWechatBindModal = () => {
-//   isWechatBindModalVisible.value = true;
-// };
-
-const closeWechatBindModal = () => {
-  isWechatBindModalVisible.value = false;
-};
-
-// const bindWechat = () => {
-//   message.success(`绑定微信号:${wechatNumber.value}`);
-//   closeWechatBindModal();
-// };
 const openDeviceManagementModal = () => {
   isDeviceManagementModalVisible.value = true;
 };
@@ -142,17 +121,17 @@ const logoutAccount = () => {
 
 const editNumber = ()=>{
   isEditingNumber.value = true
-  phoneNumber.value = user.value.phone
-  wechatNumber.value = user.value.wechat
+  phoneNumber.value = userInfo.value.phone
+  wechatNumber.value = userInfo.value.wechat
 }
 const cancelNumber = ()=>{
   isEditingNumber.value = false
-  phoneNumber.value = user.value.phone
-  wechatNumber.value = user.value.wechat
+  phoneNumber.value = userInfo.value.phone
+  wechatNumber.value = userInfo.value.wechat
 }
 const saveNumber = ()=>{
-  user.value.phone = phoneNumber.value
-  user.value.wechat = wechatNumber.value
+  userInfo.value.phone = phoneNumber.value
+  userInfo.value.wechat = wechatNumber.value
   isEditingNumber.value = false
 }
 
@@ -167,14 +146,14 @@ const saveNumber = ()=>{
     <div class="info">
      <n-card>
        <n-card>
-       <n-text strong style="font-size: 16px">{{user.name}}</n-text>
+       <n-text strong style="font-size: 16px">{{userInfo.name}}</n-text>
         <br/>
-         <n-text style="font-size: 16px">帐号：{{user.account}}</n-text>
+         <n-text style="font-size: 16px">帐号：{{userInfo.account}}</n-text>
          <br/>
-       <n-text style="font-size: 16px">年龄：{{user.age}} |  性别：{{user.gender}} |  工作机构：{{user.organization}}</n-text>
+       <n-text style="font-size: 16px">年龄：{{userInfo.age}} |  性别：{{userInfo.gender}} |  工作机构：{{userInfo.organization}}</n-text>
        </n-card>
        <n-card>
-         <n-text>{{user.profile}}</n-text>
+         <n-text>{{userInfo.profile}}</n-text>
        </n-card>
      </n-card>
       <n-button size="small" type="tertiary" @click="editProfile">编辑简介</n-button>
@@ -188,7 +167,7 @@ const saveNumber = ()=>{
               <n-row>
               <n-col :span="6">用户名:</n-col>
               <n-col :span="18">
-                <span v-if="!isEditing">{{user.name}}</span>
+                <span v-if="!isEditing">{{userInfo.name}}</span>
                 <n-input v-if="isEditing" v-model:value="editableUser.name" placeholder="请输入用户名" />
               </n-col>
               </n-row>
@@ -196,7 +175,7 @@ const saveNumber = ()=>{
               <n-row>
                 <n-col :span="6">年龄：</n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing"> {{user.age}}</span>
+                  <span v-if="!isEditing"> {{userInfo.age}}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.age" placeholder="请输入年龄"/>
                 </n-col>
               </n-row>
@@ -204,7 +183,7 @@ const saveNumber = ()=>{
               <n-row>
                 <n-col :span="6">性别：</n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing">{{ user.gender }}</span>
+                  <span v-if="!isEditing">{{ userInfo.gender }}</span>
                   <n-select
                       v-if="isEditing"
                       v-model:value="editableUser.gender"
@@ -216,7 +195,7 @@ const saveNumber = ()=>{
               <n-row>
                 <n-col :span="6">帐号：</n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing">{{ user.account }}</span>
+                  <span v-if="!isEditing">{{ userInfo.account }}</span>
                   <n-input disabled v-if="isEditing" v-model:value="editableUser.account" placeholder="请输入负责儿童数量" />
                 </n-col>
               </n-row>
@@ -224,7 +203,7 @@ const saveNumber = ()=>{
               <n-row>
                 <n-col :span="6">邮箱：</n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing">{{ user.email }}</span>
+                  <span v-if="!isEditing">{{ userInfo.email }}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.email" placeholder="请输入邮箱" />
                 </n-col>
               </n-row>
@@ -232,7 +211,7 @@ const saveNumber = ()=>{
               <n-row>
                 <n-col :span="6">手机号：</n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing">{{ user.phone }}</span>
+                  <span v-if="!isEditing">{{ userInfo.phone }}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.phone" placeholder="请输入手机号" />
                 </n-col>
               </n-row>
@@ -240,7 +219,7 @@ const saveNumber = ()=>{
               <n-row>
                 <n-col :span="6">工作机构：</n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing">{{ user.organization }}</span>
+                  <span v-if="!isEditing">{{ userInfo.organization }}</span>
                   <n-input v-if="isEditing" v-model:value="editableUser.organization" placeholder="请输入工作机构" />
                 </n-col>
               </n-row>
@@ -248,7 +227,7 @@ const saveNumber = ()=>{
               <n-row>
                 <n-col :span="6">负责儿童数量：</n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing">{{ user.childrenCount }}</span>
+                  <span v-if="!isEditing">{{ userInfo.childrenCount }}</span>
                   <n-input disabled v-if="isEditing" v-model:value="editableUser.childrenCount" placeholder="请输入负责儿童数量" />
                 </n-col>
               </n-row>
@@ -258,7 +237,7 @@ const saveNumber = ()=>{
                   简介：
                 </n-col>
                 <n-col :span="18">
-                  <span v-if="!isEditing">{{user.profile}}</span>
+                  <span v-if="!isEditing">{{userInfo.profile}}</span>
                   <n-input v-if="isEditing"  v-model:value="editableUser.profile" placeholder="请输入简介"></n-input>
                 </n-col>
               </n-row>
@@ -276,7 +255,7 @@ const saveNumber = ()=>{
           <n-card title="帐号管理" style="margin-bottom: 20px;">
             <n-row>
               <n-col :span="12">
-                <p><strong>当前登录帐号：</strong>{{ user.account }}</p>
+                <p><strong>当前登录帐号：</strong>{{ userInfo.account }}</p>
               </n-col>
               <n-col :span="12">
                 <n-button type="primary" size="small" @click="openAddAccountModal">切换其他帐号</n-button>
@@ -290,7 +269,7 @@ const saveNumber = ()=>{
                 <p><strong>手机号：</strong></p>
               </n-col>
               <n-col :span="16">
-                <span v-if="!isEditingNumber">{{user.phone}}</span>
+                <span v-if="!isEditingNumber">{{userInfo.phone}}</span>
                 <n-input  v-if="isEditingNumber" v-model:value="phoneNumber" placeholder="请输入关联手机号"></n-input>
               </n-col>
             </n-row>
@@ -299,7 +278,7 @@ const saveNumber = ()=>{
               <p><strong>微信号：</strong></p>
             </n-col>
             <n-col :span="16">
-              <span v-if="!isEditingNumber">{{user.wechat}}</span>
+              <span v-if="!isEditingNumber">{{userInfo.wechat}}</span>
               <n-input  v-if="isEditingNumber" v-model:value="wechatNumber" placeholder="请输入关联手机号"></n-input>
             </n-col>
             </n-row>
@@ -390,7 +369,7 @@ const saveNumber = ()=>{
     <n-card title="修改密码" style="width: 500px">
       <n-form>
         <n-form-item label="用户">
-          <n-input disabled :value="user.name"/>
+          <n-input disabled :value="userInfo.name"/>
         </n-form-item>
         <n-form-item required label="旧密码">
           <n-input v-model:value="oldPassword" type="password" placeholder="请输入旧密码" style="margin-bottom: 10px"/>

@@ -12,7 +12,7 @@ const login = async (LoginData:{account: string, userType: string, password: str
 
         if(response.data.success){
             console.log("登录成功:", response.data.message);
-            return true;
+            return response.data.user
         }else{
             console.error("登录失败:", response.data.message);
             return false;

@@ -27,6 +27,7 @@ const checkAccountExists  = async(account: string) =>{
 const register = async (
     registerForm: { name: string, age: number, gender: string, userType: string, phone: string, email: string, account: string, password: string, work_unit: string }
 ) => {
+    console.log('用户名称：',registerForm.name)
     try {
         const response = await axios.post('http://localhost:5001/spark/api/register', {
             username: registerForm.name,
