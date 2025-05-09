@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lottiefiles/lottie-player": "^2.0.12",
     "@vicons/antd": "^0.13.0",
     "chart.js": "^4.4.9",
     "d3": "^7.9.0",
+    "emoji-picker-element": "^1.26.3",
     "naive-ui": "^2.41.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
