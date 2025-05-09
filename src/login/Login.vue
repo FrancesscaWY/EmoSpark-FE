@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import {ref} from 'vue'
 import {useMessage} from 'naive-ui'
+import {register,generateRandomAccount,checkAccountExists} from "../api/login/register.ts";
+// import {acceptHMRUpdate} from "pinia";
 // import background from 'src/login/assets/background.png'
+import {login} from "../api/login/login.ts"
+import router from "../router";
 const message = useMessage()
 const loginForm = ref({
   username: '',
@@ -28,25 +32,63 @@ const registerForm = ref({
 
 const activeTab = ref<'login'|'register'>('login')
 
-const handleLogin = ()=>{
-  message.success(`登录信息：${loginForm.value}`)
-  // 登录成功后进行页面跳转逻辑（可根据实际需求改为路由跳转）
-  if (loginForm.value.userType === 'doctor') {
-    message.success('登录成功，跳转到医生客户端');
-  } else {
-    message.success('登录成功，跳转到家长客户端');
+const handleLogin = async()=>{
+  const loginData = {
+    account: loginForm.value.username,
+    userType: loginForm.value.userType,
+    password: loginForm.value.password
+
   }
+  console.log(`登录信息：${loginForm.value}`)
+  const result = await login(loginData)
+
+  if(result){
+    if(loginForm.value.userType === 'doctor'){
+      message.success('登录成功，跳转到医生客户端');
+      // router.push('/psychologist/dashboard');
+    }else{
+      message.success('登录成功，跳转到家长客户端');
+    }
+  }else{
+    // 登录失败时的处理
+    message.warning(`登录失败: ${result}`);
+  }
+  // 登录成功后进行页面跳转逻辑（可根据实际需求改为路由跳转）
+  // if (loginForm.value.userType === 'doctor') {
+  //   message.success('登录成功，跳转到医生客户端');
+  // } else {
+  //   message.success('登录成功，跳转到家长客户端');
+  // }
 }
 
-const handleRegister = ()=>{
+const handleRegister = async ()=>{
   if(registerForm.value.password !== registerForm.value.confirmPassword){
     alert('密码和确认密码不一致')
     return;
   }
-  message.success(`注册信息: ${ registerForm.value}`);
-  // 注册成功后提示并切换到登录界面
-  alert('注册成功，请返回登录页面');
-  activeTab.value = 'login';
+  let account = generateRandomAccount();
+  let accountExists = await checkAccountExists(account);
+
+  while(accountExists){
+   account = generateRandomAccount();
+   accountExists = await checkAccountExists(account);
+  }
+
+  const registerData = {
+    name: registerForm.value.username,
+    age: registerForm.value.age,
+    gender: registerForm.value.gender,
+    userType: registerForm.value.userType,
+    phone: registerForm.value.phone,
+    email: registerForm.value.email,
+    account: account,
+    password: registerForm.value.password,
+    work_unit: registerForm.value.workUnit
+  }
+  register(registerData).then((isSuccessful: boolean)=>{
+    message.success(`注册成功，请返回登录页面`);
+    activeTab.value = 'login'
+  })
 }
 
 const switchToRegister = ()=>{
