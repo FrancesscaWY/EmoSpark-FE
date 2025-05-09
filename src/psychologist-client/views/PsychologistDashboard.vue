@@ -103,4 +103,3 @@ onMounted(()=>{
     <FloatingWindow v-if="floatingStore.isFloating"/>
   </n-layout>
 </template>
-

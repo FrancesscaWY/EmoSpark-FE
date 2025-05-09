@@ -7,9 +7,13 @@
 </script>
 
 <template>
+<<<<<<< HEAD
+  <router-view/>
+=======
   <n-message-provider>
     <router-view />
   </n-message-provider>
+>>>>>>> db9e9a726431e0662d41b01051c49816bcab7733
 </template>
 
 <style scoped>
