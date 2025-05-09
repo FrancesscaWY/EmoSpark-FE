@@ -2,10 +2,14 @@
 import {ref} from 'vue'
 import {useMessage} from 'naive-ui'
 import {register,generateRandomAccount,checkAccountExists} from "../api/login/register.ts";
+import {useUserStore} from "../utils/userStore.ts";
 // import {acceptHMRUpdate} from "pinia";
 // import background from 'src/login/assets/background.png'
 import {login} from "../api/login/login.ts"
 import router from "../router";
+
+const userStore = useUserStore()
+
 
 const message = useMessage()
 const loginForm = ref({
@@ -22,7 +26,9 @@ const userTypeOptions = ref([
 const registerForm = ref({
   username:'',
   gender: 'female',
-  age: 0,
+
+  age: 6,
+
   userType: 'parent',
   workUnit:'',
   phone:'',
@@ -44,9 +50,15 @@ const handleLogin = async()=>{
   const result = await login(loginData)
 
   if(result){
+
+    // 保存全局用户信息
+    userStore.setUser(result.user)
+
     if(loginForm.value.userType === 'doctor'){
       message.success('登录成功，跳转到医生客户端');
+
       await router.push('/psychologist');
+
     }else{
       message.success('登录成功，跳转到家长客户端');
       await router.push('/parents')
@@ -87,8 +99,10 @@ const handleRegister = async ()=>{
     password: registerForm.value.password,
     work_unit: registerForm.value.workUnit
   }
+
   const response = await register(registerData)
   if(response){
+
     message.success(`注册成功，请返回登录页面`);
     activeTab.value = 'login'
   }else{
