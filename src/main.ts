@@ -3,6 +3,8 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import naive from 'naive-ui'
 import router from './router'
+import '@lottiefiles/lottie-player'
+import 'emoji-picker-element'
 import { createPinia } from 'pinia'
 
 const pinia = createPinia()
