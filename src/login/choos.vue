@@ -45,7 +45,7 @@ import { NButton } from 'naive-ui'
 
 import { useRouter } from 'vue-router'
 
-const bg='src/children-client/assets/bk.jpeg'
+const bg='src/parents-client/assets/bk.jpeg'
 const backgroundStyle = {
   backgroundImage: `linear-gradient(180deg, #4E81BA 0%, rgba(87, 157, 208, 0.2) 80%), url(${bg})`,
   backgroundSize: 'cover',
@@ -56,8 +56,8 @@ const router = useRouter()
 
 function selectRole(role: string) {
   if (role === 'children') router.push('/children-login')
-  else if (role === 'parent') router.push('/parent-login')
-  else if (role === 'doctor') router.push('/psychologist-login')
+  else if (role === 'parent') router.push('/login')
+  else if (role === 'doctor') router.push('/login')
 }
 </script>
 

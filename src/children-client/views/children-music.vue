@@ -105,7 +105,7 @@ const songs = ref<MediaItem[]>([
   {
     id: 2,
     title: '春天的心跳',
-    thumbnail: 'src/children-client/assets/bbbk.jpeg',
+    thumbnail: 'src/parents-client/assets/bbbk.jpeg',
     src: 'https://mymusic-1350807164.cos.ap-guangzhou.myqcloud.com/2.mp3',
     type: 'audio'
   }
@@ -138,7 +138,7 @@ function play(item: MediaItem) {
   current.value = item
 }
 
-const bg = 'src/children-client/assets/bk.jpeg'
+const bg = 'src/parents-client/assets/bk.jpeg'
 const backgroundStyle = {
   backgroundImage: `linear-gradient(180deg, #4E81BA 0%, rgba(87, 157, 208, 0.2) 80%), url(${bg})`,
   backgroundSize: 'cover',

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// <<<<<<< children
-// import childRoutes from './children-routes'
+// <<<<<<< parents
+// import childRoutes from './parents-routes'
 // import parentRoutes from './parents-routes'
 // import psychologistRoutes from './psychologist-routes'
 
@@ -8,7 +8,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 // const ChoosePage = () => import('../log/choos.vue')
 
 // const routes = [
-//     { path: '/', redirect: '/children-routes' },
+//     { path: '/', redirect: '/parents-routes' },
 //     // 默认跳转到身份选择页
 //    // { path: '/', redirect: '/choos' },
 
@@ -22,11 +22,17 @@ import { createRouter, createWebHistory } from 'vue-router'
 // =======
 import childRoutes from './children-routes'
 import parentRoutes from './parents-routes'
-import psychologistRoutes from './psychologist-routes.ts'
+import psychologistRoutes from './psychologist-routes'
+import Chose from '../login/choos.vue'
 import Login from '../login/Login.vue'
+import User from "../children-client/views/children-company.vue";
+import music from "../children-client/views/children-music.vue";
+import chat from "../children-client/views/children-chat.vue";
+import home from "../children-client/views/children-home.vue";
 const routes = [
     { path: '/', redirect: '/login' },
-    { path: '/login', component:Login},
+    { path: '/chose', component:Chose},
+    {path: '/login', component: Login},
     ...childRoutes,
     ...parentRoutes,
     ...psychologistRoutes

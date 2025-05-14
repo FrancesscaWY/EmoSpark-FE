@@ -1,5 +1,5 @@
-// src/router/children-routes.ts
-// src/router/children-routes.ts
+// src/router/parents-routes.ts
+// src/router/parents-routes.ts
 import type { RouteRecordRaw } from 'vue-router'
 import User from "../children-client/views/children-company.vue"
 import music from "../children-client/views/children-music.vue"
@@ -10,11 +10,10 @@ const childrenRoutes: RouteRecordRaw[] = [
         path: '/children-routes',               // ← 根路径就是 homepage
         name: 'ChildrenHome',
         component: () => import('../children-client/views/homepage.vue'),},
-        // children:[
     {
-                path: '/children-company',
-                name: 'company',
-                component: User
+        path: '/children-company',
+        name: 'company',
+        component: User
     },
     {
         path: '/children-music',
@@ -31,6 +30,7 @@ const childrenRoutes: RouteRecordRaw[] = [
         name: 'home',
         component: home
     },
+        // parents:[
         // ]
     // },
 

@@ -20,7 +20,8 @@ const loginForm = ref({
 
 const userTypeOptions = ref([
   {label: '家长',value:'parent'},
-  {label: '医生',value:'doctor'}
+  {label: '医生',value:'doctor'},
+  {label: '儿童',value:'child'}
 ])
 
 const registerForm = ref({
@@ -59,9 +60,12 @@ const handleLogin = async()=>{
 
       await router.push('/psychologist');
 
-    }else{
+    }else if (loginForm.value.userType === 'parents'){
       message.success('登录成功，跳转到家长客户端');
       await router.push('/parents')
+    }else{
+      message.success('登录成功，跳转到儿童客户端');
+      await router.push('/children-routes')
     }
   }else{
     // 登录失败时的处理

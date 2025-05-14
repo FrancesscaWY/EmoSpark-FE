@@ -171,7 +171,7 @@ const startSpeechRecognition = () => {
     console.warn('语音识别启动失败', e)
   }
 }
-const bg='src/children-client/assets/bk.jpeg'
+const bg='src/parents-client/assets/bk.jpeg'
 const backgroundStyle = {
   backgroundImage: `linear-gradient(180deg, #4E81BA 0%, rgba(87, 157, 208, 0.2) 80%), url(${bg})`,
   backgroundSize: 'cover',

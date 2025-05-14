@@ -44,7 +44,7 @@
           <template v-if="!isMiniWelcome">
             <n-button type="primary" class="account-btn" @click="handleLogout">
               <template #icon><n-icon><user-outlined /></n-icon></template>
-              账户管理
+              退出登录
             </n-button>
           </template>
         </div>
@@ -71,7 +71,8 @@ import {
   HistoryOutlined,
   MessageOutlined,
   ProfileOutlined,
-  MedicineBoxOutlined
+  MedicineBoxOutlined,
+  SettingOutlined // 新添加的图标
 } from '@vicons/antd';
 
 export default defineComponent({
@@ -86,7 +87,8 @@ export default defineComponent({
     HistoryOutlined,
     MessageOutlined,
     ProfileOutlined,
-    MedicineBoxOutlined
+    MedicineBoxOutlined,
+    SettingOutlined // 新添加的图标
   },
   setup() {
     const router = useRouter();
@@ -177,6 +179,10 @@ export default defineComponent({
         label: '咨询医生',
         key: 'consultDoctor',
         icon: renderIcon(MedicineBoxOutlined)
+      },{
+        label: '用户中心',
+        key: 'userSettings',
+        icon: renderIcon(SettingOutlined)
       }
     ]);
 
@@ -195,7 +201,7 @@ export default defineComponent({
 
     // 处理退出登录
     const handleLogout = () => {
-      router.push({ name: 'userSettings' });
+      router.push({ path:'/login' });
     };
 
     return {

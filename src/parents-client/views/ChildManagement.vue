@@ -288,6 +288,8 @@
 <script lang="ts">
 import { defineComponent, ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+// import {useUserStore} from "@/utils/userStore";
+// const parent = useUserStore().userInfo
 import {
   NInput,
   NInputGroup,
@@ -306,7 +308,8 @@ import {
   NGrid,
   NGridItem,
   NCard,
-  NDivider
+  NDivider,
+  useMessage
 } from 'naive-ui';
 import {
   SearchOutlined,
@@ -316,7 +319,9 @@ import {
   EyeOutlined,
   SmileOutlined
 } from '@vicons/antd';
-
+import { addChild } from '@/api/parents/addChild'
+import {useUserStore} from "@/utils/userStore";
+// const {addChild, loading} = useAddChild()
 // 定义儿童信息接口
 interface ChildInfo {
   id: string;
@@ -361,6 +366,7 @@ export default defineComponent({
     SmileOutlined
   },
   setup() {
+    const message = useMessage()
     const router = useRouter();
     const searchQuery = ref('');
     const showAddChildModal = ref(false);
@@ -372,7 +378,7 @@ export default defineComponent({
     const currentChild = ref<ChildInfo | null>(null);
     const addFormRef = ref(null);
     const editFormRef = ref(null);
-    
+
     // 响应式栅格配置
     const responsive = {
       xs: { cols: 1 },  // <640px 手机，每行显示1个
@@ -382,11 +388,11 @@ export default defineComponent({
       xl: { cols: 5 },  // >=1536px 特大屏幕，每行显示5个
       xxl: { cols: 6 } // >=1920px 超大屏幕，每行显示6个
     }
-    
+
     // 头像设置
     const boyAvatar = '/src/parents-client/assets/boy.jpg';
     const girlAvatar = '/src/parents-client/assets/girl.jpg';
-    
+
     // 表单验证规则
     const rules = {
       name: {
@@ -416,7 +422,7 @@ export default defineComponent({
         message: '请设置密码'
       }
     };
-    
+
     // 添加儿童表单数据
     const formData = reactive({
       name: '',
@@ -428,7 +434,7 @@ export default defineComponent({
       username: '',
       password: ''
     });
-    
+
     // 编辑儿童表单数据
     const editFormData = reactive<ChildInfo>({
       id: '',
@@ -443,17 +449,17 @@ export default defineComponent({
       username: '',
       password: ''
     });
-    
+
     // 处理性别选择变化 - 设置对应头像
     const handleGenderChange = (value: number) => {
       formData.avatar = value === 1 ? boyAvatar : girlAvatar;
     };
-    
+
     // 处理编辑时性别选择变化 - 设置对应头像
     const handleEditGenderChange = (value: number) => {
       editFormData.avatar = value === 1 ? boyAvatar : girlAvatar;
     };
-    
+
     // 模拟的儿童数据
     const childrenData = ref<ChildInfo[]>([
       {
@@ -483,7 +489,7 @@ export default defineComponent({
         password: '123456'
       }
     ]);
-    
+
     // 初始化
     onMounted(() => {
       // 从LocalStorage加载数据
@@ -497,41 +503,41 @@ export default defineComponent({
             registerDate: new Date(child.registerDate)
           }));
         } catch (error) {
-          console.error('Failed to parse stored children data:', error);
+          console.error('Failed to parse stored parents data:', error);
         }
       }
     });
-    
+
     // 保存儿童数据到LocalStorage
     const saveChildrenData = () => {
       try {
         localStorage.setItem('childrenData', JSON.stringify(childrenData.value));
       } catch (error) {
-        console.error('Failed to save children data:', error);
+        console.error('Failed to save parents data:', error);
       }
     };
-    
+
     // 过滤后的儿童数据
     const filteredChildren = computed(() => {
       if (!searchQuery.value) return childrenData.value;
-      
-      return childrenData.value.filter(child => 
-        child.name.includes(searchQuery.value) || 
+
+      return childrenData.value.filter(child =>
+        child.name.includes(searchQuery.value) ||
         child.nickname.includes(searchQuery.value)
       );
     });
-    
+
     // 处理搜索
     const handleSearch = () => {
       // 搜索逻辑已在计算属性中处理
     };
-    
+
     // 处理查看详情
     const handleViewDetails = (child: ChildInfo) => {
       currentChild.value = { ...child };
       showDetailsModal.value = true;
     };
-    
+
     // 处理编辑
     const handleEdit = (child: ChildInfo) => {
       // 深拷贝确保不会直接修改原始数据
@@ -546,17 +552,17 @@ export default defineComponent({
       editFormData.emotionRecognitionRate = child.emotionRecognitionRate;
       editFormData.username = child.username || '';
       editFormData.password = child.password || '';
-      
+
       showEditChildModal.value = true;
     };
-    
+
     // 处理删除
     const handleDelete = (child: ChildInfo) => {
       deleteChildId.value = child.id;
       deleteChildName.value = child.name;
       showDeleteConfirm.value = true;
     };
-    
+
     // 确认删除
     const confirmDelete = () => {
       const index = childrenData.value.findIndex(child => child.id === deleteChildId.value);
@@ -566,82 +572,149 @@ export default defineComponent({
       }
       showDeleteConfirm.value = false;
     };
-    
+
     // 取消删除
     const cancelDelete = () => {
       showDeleteConfirm.value = false;
     };
-    
+
+
     // 处理添加儿童
-    const handleAddChild = () => {
+    // const handleAddChild = async () => {
+    //   if (!editFormRef.value) {
+    //     console.error('Edit form reference is not available');
+    //     return;
+    //   }
+    //   try{
+    //     await(addFormRef.value as any).validate()
+    //
+    //     const payload: AddChildPayload = {
+    //       parent_id: parent.id || '',
+    //       name: formData.name,
+    //       nickname: formData.nickname,
+    //       gender: formData.gender,
+    //       birthday: formData.birthday ?? null,
+    //       account: formData.username,
+    //       password: formData.password,
+    //       note: formData.note || ''
+    //     }
+    //     await addChild(payload)
+    //
+    //     // 可选：也可以从后端返回完整 child 信息后再追加到 childrenData
+    //     // window.$message.success('儿童信息添加成功')
+    //
+    //     // 重置表单和状态
+    //     resetFormData()
+    //     showAddChildModal.value = false
+    //
+    //     // 可选：刷新列表
+    //     // await fetchChildrenData()
+    //   }catch(err: any){
+    //     if (err?.response?.data?.detail) {
+    //       console.log(`添加失败：${err.response.data.detail}`)
+    //     } else {
+    //       console.error('添加失败', err)
+    //       console.log('儿童信息添加失败，请稍后重试')
+    //     }
+    //   }
+    //
+    //   (addFormRef.value as any).validate((errors: any) => {
+    //     if (!errors) {
+    //       // 表单验证通过，创建新儿童信息
+    //       const newChild: ChildInfo = {
+    //         id: String(Date.now()),
+    //         name: formData.name,
+    //         nickname: formData.nickname,
+    //         gender: formData.gender,
+    //         birthday: formData.birthday,
+    //         registerDate: new Date(),
+    //         avatar: formData.gender === 1 ? boyAvatar : girlAvatar,
+    //         note: formData.note,
+    //         emotionRecognitionRate: 0,
+    //         username: formData.username,
+    //         password: formData.password
+    //       };
+    //
+    //       childrenData.value.push(newChild);
+    //       saveChildrenData();
+    //
+    //       resetFormData();
+    //       showAddChildModal.value = false;
+    //
+    //       console.log('儿童信息添加成功');
+    //     } else {
+    //       console.error('Form validation failed:', errors);
+    //     }
+    //   });
+    // };
+    //
+    const handleAddChild = async () => {
       if (!addFormRef.value) {
-        console.error('Form reference is not available');
-        return;
+        console.error('Add form reference is not available')
       }
-      
-      (addFormRef.value as any).validate((errors: any) => {
-        if (!errors) {
-          // 表单验证通过，创建新儿童信息
-          const newChild: ChildInfo = {
-            id: String(Date.now()),
-            name: formData.name,
-            nickname: formData.nickname,
-            gender: formData.gender,
-            birthday: formData.birthday,
-            registerDate: new Date(),
-            avatar: formData.gender === 1 ? boyAvatar : girlAvatar,
-            note: formData.note,
-            emotionRecognitionRate: 0,
-            username: formData.username,
-            password: formData.password
-          };
-          
-          childrenData.value.push(newChild);
-          saveChildrenData();
-          
-          resetFormData();
-          showAddChildModal.value = false;
-          
-          console.log('儿童信息添加成功');
+
+      const userStore = useUserStore()
+      const parent = userStore.userInfo
+      if (!parent?.id) {
+        console.log('未获取到家长信息，请先登录')
+        return
+      }
+
+      // 1. 表单校验
+      try {
+        await (addFormRef.value as any).validate()
+      } catch (err: any) {
+        // 校验没过就直接返回
+        console.error('表单校验失败:', err)
+        return
+      }
+
+      // 2. 构造 payload
+      const payload: any = {
+        parent_id: parent.id,
+        name: formData.name,
+        nickname: formData.nickname,
+        gender: formData.gender,
+        birthday: formData.birthday ?? null,
+        account: formData.username,
+        password: formData.password,
+        note: formData.note || '',
+        relation: '家长'
+      }
+
+      // 3. 调用后端 + 处理结果
+      try {
+        const res = await addChild(payload)      // res 现在应该就是 { success, message, ... }
+        console.log('info：', res)
+
+        // 防御性编程，先做一次空值检查
+        if (res && res.success === true) {
+          message.success(res.message)
+          resetFormData()
+          showAddChildModal.value = false
         } else {
-          console.error('Form validation failed:', errors);
+          // 如果 res 不是预期结构，也能给用户一个友好的提示
+          message.error(res?.message ?? '未知错误，请稍后重试')
         }
-      });
-    };
-    
+      } catch (error: any) {
+        // 捕获网络或解析错误
+        console.log('添加儿童请求失败:', error)
+        message.error(error.message || '请求失败，请稍后重试')
+      }
+    }
+
+
     // 取消添加儿童
     const cancelAddChild = () => {
       resetFormData();
       showAddChildModal.value = false;
     };
-    
+
     // 处理更新儿童信息
     const handleUpdateChild = () => {
-      if (!editFormRef.value) {
-        console.error('Edit form reference is not available');
-        return;
-      }
-      
-      (editFormRef.value as any).validate((errors: any) => {
-        if (!errors) {
-          const index = childrenData.value.findIndex(child => child.id === editFormData.id);
-          if (index !== -1) {
-            const updatedChild: ChildInfo = {
-              ...editFormData,
-              avatar: editFormData.gender === 1 ? boyAvatar : girlAvatar
-            };
-            childrenData.value[index] = updatedChild;
-            saveChildrenData();
-          }
-          showEditChildModal.value = false;
-          
-          console.log('儿童信息更新成功');
-        } else {
-          console.error('Form validation failed:', errors);
-        }
-      });
+
     };
-    
+
     // 重置表单数据
     const resetFormData = () => {
       formData.name = '';
@@ -653,32 +726,32 @@ export default defineComponent({
       formData.username = '';
       formData.password = '';
     };
-    
+
     // 计算年龄
     const calculateAge = (birthday: Date | null) => {
       if (!birthday) return '';
-      
+
       const birthDate = new Date(birthday);
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
-      
+
       return `${age}岁`;
     };
-    
+
     // 计算使用时间
     const calculateUsageTime = (registerDate: Date) => {
       if (!registerDate) return '';
-      
+
       const startDate = new Date(registerDate);
       const today = new Date();
       const yearDiff = today.getFullYear() - startDate.getFullYear();
       const monthDiff = today.getMonth() - startDate.getMonth();
-      
+
       if (yearDiff > 0) {
         return yearDiff === 1 ? '1年' : `${yearDiff}年`;
       } else if (monthDiff > 0) {
@@ -688,24 +761,24 @@ export default defineComponent({
         return `${dayDiff}天`;
       }
     };
-    
+
     // 格式化日期
     const formatDate = (date: Date | null) => {
       if (!date) return '未设置';
-      
+
       const d = new Date(date);
       const year = d.getFullYear();
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
-      
+
       return `${year}-${month}-${day}`;
     };
-    
+
     // 导航到成长记录页面
     const navigateToGrowthRecord = (childId: string) => {
       router.push({ path: '/parents/child-growth', query: { id: childId } });
     };
-    
+
     return {
       searchQuery,
       showAddChildModal,

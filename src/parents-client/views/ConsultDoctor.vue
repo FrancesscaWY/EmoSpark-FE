@@ -478,7 +478,7 @@ export default defineComponent({
     const fetchChildDetails = async (childId: string) => {
       try {
         // 实际应用中应调用API
-        // const response = await axios.get(`/api/children/${childId}`);
+        // const response = await axios.get(`/api/parents/${childId}`);
         // currentChild = response.data;
         
         // 模拟数据

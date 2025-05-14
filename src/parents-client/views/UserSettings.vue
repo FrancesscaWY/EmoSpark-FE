@@ -1,9 +1,9 @@
 <template>
   <div class="user-settings">
-    <div class="settings-header">
-      <h1>个人中心</h1>
-      <p class="subtitle">管理您的账户信息和偏好设置</p>
-    </div>
+<!--    <div class="settings-header">-->
+<!--      <h1>个人中心</h1>-->
+<!--      <p class="subtitle">管理您的账户信息和偏好设置</p>-->
+<!--    </div>-->
 
     <!-- 用户信息概览 -->
     <div class="user-overview">

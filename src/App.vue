@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-// import CameraButton from "./children-client/components/CameraButton.vue";
+// import CameraButton from "./parents-client/components/CameraButton.vue";
 // import Welcome1 from "./psychologist-client/components/FloatingWindow.vue";
 // import Welcome2 from "./parents-client/components/FloatingWindow.vue";
 // import PsychologistDashboard from "./psychologist-client/views/PsychologistDashboard.vue";
