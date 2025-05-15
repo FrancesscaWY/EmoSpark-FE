@@ -121,32 +121,55 @@ const switchToRegister = ()=>{
 
 <template>
   <div class="app-background">
-    <n-card :bordered="false" class="form-card">
-      <n-tabs v-model:value="activeTab" type="line" class="tabs" size="large" >
-        <n-tab-pane name="login" tab="登录" ></n-tab-pane>
-        <n-tab-pane name="register" tab="注册" ></n-tab-pane>
-      </n-tabs>
+    <div class="left">
+      <div class="title">
+        <h1 class="zi">Hi,欢迎来到星友</h1>
+        <h4 class="eng">twinkle twinkle little star </h4>
+      </div>
+    </div>
+    <div class="right">
+      <n-card :bordered="false" class="form-card" style="width: 600px">
+        <n-tabs
+            v-model:value="activeTab"
+            type="line"
+            class="tabs"
+            size="large"
+            :theme-overrides="{
+              Tabs: {
+              tabColorActiveBar: '#666666',
+              tabTextColorActive: '#666666',
+              tabTextColorHover: '#888888',
+              tabTextColor: '#999999',
+              tabFontSizeActive: '20px',
+              tabFontSize: '18px'
+              }
+            }"
+          >
+          <n-tab-pane name="login" tab="登录" />
+          <n-tab-pane name="register" tab="注册" />
+        </n-tabs>
 
-      <n-form v-if="activeTab === 'login'" :model="loginForm" ref="loginFormRef" labe-width="80">
-        <n-form-item label="帐号">
-          <n-input v-model:value="loginForm.username" placeholder="手机号/邮箱号/帐号" />
-        </n-form-item>
-        <n-form-item label="用户类型">
-          <n-select v-model:value="loginForm.userType" :options="userTypeOptions" placeholder="选择用户类型" />
-        </n-form-item>
-        <n-form-item label="密码">
-          <n-input type="password" v-model:value="loginForm.password" placeholder="请输入密码" />
-        </n-form-item>
-        <n-form-item>
-          <n-button @click="handleLogin" type="primary" block>登录</n-button>
-        </n-form-item>
-        <n-text style="color: #ffffff" @click="switchToRegister">还没有帐号？ 点击“注册”</n-text>
-      </n-form>
 
-      <n-form v-if="activeTab === 'register'" :model="registerForm" ref="registerFormRef" label-width="80">
-        <n-form-item label="用户名">
-          <n-input v-model:value="registerForm.username" placeholder="请输入用户名" />
-        </n-form-item>
+        <n-form v-if="activeTab === 'login'" :model="loginForm" ref="loginFormRef" label-width="80">
+          <n-form-item label="帐号">
+            <n-input v-model:value="loginForm.username" placeholder="手机号/邮箱号/帐号" />
+          </n-form-item>
+          <n-form-item label="用户类型">
+            <n-select v-model:value="loginForm.userType" :options="userTypeOptions" placeholder="选择用户类型" />
+          </n-form-item>
+          <n-form-item label="密码">
+            <n-input type="password" v-model:value="loginForm.password" placeholder="请输入密码" />
+          </n-form-item>
+          <n-form-item>
+            <n-button @click="handleLogin" type="primary" block>登录</n-button>
+          </n-form-item>
+          <n-text style="color: #0000EE; cursor: pointer;" @click="switchToRegister">还没有帐号？ 点击“注册”</n-text>
+        </n-form>
+
+        <n-form v-if="activeTab === 'register'" :model="registerForm" ref="registerFormRef" label-width="80">
+          <n-form-item label="用户名">
+            <n-input v-model:value="registerForm.username" placeholder="请输入用户名" />
+          </n-form-item>
           <n-row gutter="20">
             <n-col :span="8">
               <n-form-item label="性别">
@@ -156,45 +179,44 @@ const switchToRegister = ()=>{
                 </n-radio-group>
               </n-form-item>
             </n-col>
-
             <n-col :span="8">
               <n-form-item label="年龄">
                 <n-input-number v-model:value="registerForm.age" :min="0" placeholder="请输入年龄" />
               </n-form-item>
             </n-col>
-
             <n-col :span="8">
               <n-form-item label="用户类型">
                 <n-select v-model:value="registerForm.userType" :options="userTypeOptions" placeholder="请选择用户类型" />
               </n-form-item>
             </n-col>
           </n-row>
-        <n-form-item label="电话">
-          <n-input v-model:value="registerForm.phone" placeholder="请输入电话号码" />
-        </n-form-item>
-        <n-form-item label="邮箱">
-          <n-input v-model:value="registerForm.email" placeholder="请输入邮箱" />
-        </n-form-item>
-        <n-form-item v-if="registerForm.userType === 'doctor'" label="工作机构">
-          <n-input v-model:value="registerForm.workUnit" placeholder="请输入工作机构" />
-        </n-form-item>
-        <n-form-item label="设置密码">
-          <n-input type="password" v-model:value="registerForm.password" placeholder="设置密码" />
-        </n-form-item>
-        <n-form-item label="确认密码">
-          <n-input type="password" v-model:value="registerForm.confirmPassword" placeholder="确认密码" />
-        </n-form-item>
-        <n-form-item>
-          <n-button @click="handleRegister" type="primary" block>注册</n-button>
-        </n-form-item>
-      </n-form>
-    </n-card>
+          <n-form-item label="电话">
+            <n-input v-model:value="registerForm.phone" placeholder="请输入电话号码" />
+          </n-form-item>
+          <n-form-item label="邮箱">
+            <n-input v-model:value="registerForm.email" placeholder="请输入邮箱" />
+          </n-form-item>
+          <n-form-item v-if="registerForm.userType === 'doctor'" label="工作机构">
+            <n-input v-model:value="registerForm.workUnit" placeholder="请输入工作机构" />
+          </n-form-item>
+          <n-form-item label="设置密码">
+            <n-input type="password" v-model:value="registerForm.password" placeholder="设置密码" />
+          </n-form-item>
+          <n-form-item label="确认密码">
+            <n-input type="password" v-model:value="registerForm.confirmPassword" placeholder="确认密码" />
+          </n-form-item>
+          <n-form-item>
+            <n-button @click="handleRegister" type="primary" block>注册</n-button>
+          </n-form-item>
+        </n-form>
+      </n-card>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .app-background {
-  background: url('src/login/assets/pdx.png') no-repeat center center fixed;
+  background: url('src/children-client/assets/bk.jpeg') no-repeat center center fixed;
   background-size: cover;
   height: 100vh;
   display: flex;
@@ -215,10 +237,76 @@ const switchToRegister = ()=>{
   margin-bottom: 20px;
 }
 
-.register-link {
-  color: #1890ff;
-  cursor: pointer;
-  text-align: center;
-  margin-top: 10px;
+
+/* 左侧标题区域 */
+.left {
+  margin-bottom: 150px;
+  align-items: flex-start; /* 靠左对齐 */
+  padding-left: 50px;
+  color: #333;
+}
+
+.title {
+  /* 可根据需求调整 */
+}
+
+.zi{
+  /*-webkit-text-stroke: 1px rgba(0, 0, 17, 0.71);*/
+  margin: 0;                 /* 去掉 h1 默认上下 margin */
+  color: antiquewhite;
+  font-size: 90px;
+  font-family: "ZCOOL KuaiLe", sans-serif;
+  font-weight: 400;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+.eng {
+  font-family: "Comic Relief", system-ui;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 35px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  color: #eeeeee;
+}
+
+
+/* 右侧表单区域 */
+.right {
+  flex: 1;
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+}
+
+.form-card {
+  width: 400px; /* 固定宽度，适应表单宽度 */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.tabs {
+  margin-bottom: 20px;
+}
+::v-deep(.n-tabs-tab.n-tabs-tab--active) {
+  color: #ffffff !important;
+}
+::v-deep(.n-tabs-tab.n-tabs-tab--active .n-tabs-tab__label) {
+  color: #ffffff !important;
+}
+::v-deep(.n-tabs-rail__bar) {
+  background-color: #ffffff !important;
+}
+::v-deep(.n-tabs .n-tabs-tab) {
+  font-size: 18px;
+  color: #000000;
+}
+
+::v-deep(.n-tabs .n-tabs-tab.n-tabs-tab--active) {
+  font-size: 20px;
+  color: #000000 !important; /* 激活时字体为深灰色 */
+  border-color: #000000 !important; /* 激活下划线颜色 */
+}
+
+::v-deep(.n-tabs .n-tabs-tab:hover) {
+  color: #000000 !important;
 }
 </style>
