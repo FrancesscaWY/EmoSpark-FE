@@ -189,7 +189,6 @@ const onClick = ()=> {
   width: 100vw;
   height:100vh;
 
-  background: linear-gradient(180deg, #4E81BA 0%, rgba(87, 157, 208, 0.55) 90.87%);
 
 }
 .main{

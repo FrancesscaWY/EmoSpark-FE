@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import childRoutes from './children-routes'
+//import childRoutes from './children-routes'
 // import parentRoutes from './parents-routes'
 // import psychologistRoutes from './psychologist-routes'
 
@@ -7,15 +7,15 @@ import childRoutes from './children-routes'
 const ChoosePage = () => import('../log/choos.vue')
 
 const routes = [
-    { path: '/', redirect: '/children-routes' },
+   //{ path: '/', redirect: '/children-routes' },
     // 默认跳转到身份选择页
-   // { path: '/', redirect: '/choos' },
+   { path: '/', redirect: '/choos' },
 
     // 身份选择页
-   // { path: '/choos', name: 'Choose', component: ChoosePage },
+    { path: '/choos', name: 'Choose', component: ChoosePage },
 
     // 其他子路由
-    ...childRoutes,
+    //...childRoutes,
     // ...parentRoutes,
     // ...psychologistRoutes
 ]
